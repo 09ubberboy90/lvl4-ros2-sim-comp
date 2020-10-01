@@ -7,7 +7,7 @@ def convert_to_euler(pose_mat):
     x = pose_mat[0][3]
     y = pose_mat[1][3]
     z = pose_mat[2][3]
-    return [x,y,z,yaw,pitch,roll]
+    return [[x,y,z],[yaw,pitch,roll]]
 
 def convert_to_quaternion(pose_mat):
     # Per issue #2, adding a abs() so that sqrt only results in real numbers
@@ -19,4 +19,4 @@ def convert_to_quaternion(pose_mat):
     x = pose_mat[0][3]
     y = pose_mat[1][3]
     z = pose_mat[2][3]
-    return [x,y,z,r_w,r_x,r_y,r_z]
+    return [[x,y,z],[r_x,r_y,r_z,r_w]]

@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'simpleArm'
+package_name = 'simple_arm'
 
 setup(
     name=package_name,
@@ -13,13 +13,14 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='ubb',
+    maintainer='Florent Audonnet',
     maintainer_email='2330834a@student.gla.ac.uk',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'vr_publish = simple_arm.vr_publish:main'
         ],
     },
 )
