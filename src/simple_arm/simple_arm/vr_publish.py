@@ -6,29 +6,40 @@ from simple_arm import utils
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose, Point, Quaternion
+import collections
 
 class VrPublisher(Node):
 
     def __init__(self, openvr_system):
         super().__init__('vr_publisher')
         self.publisher = self.create_publisher(Pose, 'VrPose', 10)     # CHANGE
-        timer_period = 0.5
+        timer_period = 2
         self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.devices = {}
+        self.devices = collections.defaultdict(list)
         self.system = openvr_system
-
+        self.poses = []
 
     def timer_callback(self):
-        poses = self.system.getDeviceToAbsoluteTrackingPose(openvr.TrackingUniverseStanding,0,0)
-        self.devices["hmd"] = poses[openvr.k_unTrackedDeviceIndex_Hmd] 
-        ## idx 2 and 3 are the lighthouse position so ignored that
-        for idx, controller in enumerate(poses[3:]):
-            if (controller.bPoseIsValid):
-                self.devices["controller_"+str(idx)] = controller
-        for key, el in self.devices.items():
-            print(f"{key} : {utils.convert_to_quaternion(el.mDeviceToAbsoluteTracking)}")
+        self.poses = self.system.getDeviceToAbsoluteTrackingPose(openvr.TrackingUniverseStanding,0,self.poses)
+        print("=================")
+        ########
+        # # ETrackedDeviceClass = ENUM_TYPE
+        # # TrackedDeviceClass_Invalid = ENUM_VALUE_TYPE(0)
+        # # TrackedDeviceClass_HMD = ENUM_VALUE_TYPE(1)
+        # # TrackedDeviceClass_Controller = ENUM_VALUE_TYPE(2)
+        # # TrackedDeviceClass_GenericTracker = ENUM_VALUE_TYPE(3)
+        # # TrackedDeviceClass_TrackingReference = ENUM_VALUE_TYPE(4)
+        # # TrackedDeviceClass_DisplayRedirect = ENUM_VALUE_TYPE(5)
+        # # TrackedDeviceClass_Max = ENUM_VALUE_TYPE(6)
+        ########
+        for idx, controller in enumerate(self.poses):
+            ## Needed as the order of the devices may change ( based on which thing got turned on first)
+            if self.system.getTrackedDeviceClass(idx) == 1:
+                self.devices["hmd"].append(controller)
+            elif self.system.getTrackedDeviceClass(idx) == 2:
+                self.devices["controller"].append(controller)
         
-        pose = utils.convert_to_quaternion(self.devices["controller_0"].mDeviceToAbsoluteTracking)
+        pose = utils.convert_to_quaternion(self.devices["controller"][0].mDeviceToAbsoluteTracking)
 
         point = Point()
         point.x = pose[0][0]
