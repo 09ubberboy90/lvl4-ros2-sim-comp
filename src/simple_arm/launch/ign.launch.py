@@ -29,8 +29,7 @@ def generate_launch_description():
                     '-x', '0.0',
                     '-z', '0',
                     '-Y', '0',
-                    '-file', os.path.join(pkg_share, 'models', 'ur10',
-                                          'ur10.sdf')],
+                    '-file', os.path.join(pkg_share, 'urdf','ur10.sdf')],
                  output='screen')
 
     # # Follow node
@@ -43,6 +42,20 @@ def generate_launch_description():
     #         ('laser_scan', '/dolly/laser_scan')
     #     ]
     # )
+    # Follow node
+    joint = Node(
+        package='joint_state_publisher',
+        executable='joint_state_publisher',
+        output='screen',
+        arguments=[os.path.join(pkg_share, 'urdf','ur10.urdf')]
+    )
+    # Follow node
+    state = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='screen',
+        arguments=[os.path.join(pkg_share, 'urdf','ur10.urdf')]
+    )
 
     # Bridge
     bridge = Node(
@@ -73,6 +86,8 @@ def generate_launch_description():
                               description='Open RViz.'),
         gazebo,
         spawn,
+        joint, 
+        state,
         # follow,
         bridge,
         rviz

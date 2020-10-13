@@ -26,7 +26,7 @@
       <visual name='visual'>
         <geometry>
           <mesh>
-            <uri>model://ur10/meshes/base.dae</uri>
+            <uri>/home/ubb/Documents/PersonalProject/install/simple_arm/share/simple_arm/models/ur10/meshes/visual/base.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -55,7 +55,7 @@
       <visual name='visual'>
         <geometry>
           <mesh>
-            <uri>model://ur10/meshes/shoulder.dae</uri>
+            <uri>/home/ubb/Documents/PersonalProject/install/simple_arm/share/simple_arm/models/ur10/meshes/visual/shoulder.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -109,7 +109,7 @@
       <visual name='visual'>
         <geometry>
           <mesh>
-            <uri>model://ur10/meshes/upperarm.dae</uri>
+            <uri>/home/ubb/Documents/PersonalProject/install/simple_arm/share/simple_arm/models/ur10/meshes/visual/upperarm.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -162,7 +162,7 @@
       <visual name='visua'>
         <geometry>
           <mesh>
-            <uri>model://ur10/meshes/forearm.dae</uri>
+            <uri>/home/ubb/Documents/PersonalProject/install/simple_arm/share/simple_arm/models/ur10/meshes/visual/forearm.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -193,7 +193,7 @@
       <visual name='visual'>
         <geometry>
           <mesh>
-            <uri>model://ur10/meshes/wrist1.dae</uri>
+            <uri>/home/ubb/Documents/PersonalProject/install/simple_arm/share/simple_arm/models/ur10/meshes/visual/wrist1.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -224,7 +224,7 @@
       <visual name='visual'>
         <geometry>
           <mesh>
-            <uri>model://ur10/meshes/wrist2.dae</uri>
+            <uri>/home/ubb/Documents/PersonalProject/install/simple_arm/share/simple_arm/models/ur10/meshes/visual/wrist2.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -255,7 +255,7 @@
       <visual name='visual'>
         <geometry>
           <mesh>
-            <uri>model://ur10/meshes/wrist3.dae</uri>
+            <uri>/home/ubb/Documents/PersonalProject/install/simple_arm/share/simple_arm/models/ur10/meshes/visual/wrist3.dae</uri>
           </mesh>
         </geometry>
       </visual>
