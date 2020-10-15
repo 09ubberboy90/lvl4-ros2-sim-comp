@@ -44,8 +44,8 @@ def generate_launch_description():
     # )
     # Follow node
     joint = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
+        package='joint_state_publisher_gui',
+        executable='joint_state_publisher_gui',
         output='screen',
         arguments=[os.path.join(pkg_share, 'urdf','ur10.urdf')]
     )
@@ -61,9 +61,7 @@ def generate_launch_description():
     bridge = Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
-        # arguments=['/dolly/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist',
-        #            '/dolly/laser_scan@sensor_msgs/msg/LaserScan@ignition.msgs.LaserScan',
-        #            '/dolly/odometry@nav_msgs/msg/Odometry@ignition.msgs.Odometry'],
+        arguments=['/tf@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V',],
         output='screen'
     )
 
