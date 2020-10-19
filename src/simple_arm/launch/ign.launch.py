@@ -25,7 +25,7 @@ def generate_launch_description():
     # Spawn dolly
     spawn = Node(package='ros_ign_gazebo', executable='create',
                  arguments=[
-                    '-name', 'UR10',
+                    '-name', 'ur10',
                     '-x', '0.0',
                     '-z', '0',
                     '-Y', '0',
@@ -47,21 +47,29 @@ def generate_launch_description():
         package='joint_state_publisher_gui',
         executable='joint_state_publisher_gui',
         output='screen',
-        arguments=[os.path.join(pkg_share, 'urdf','ur10.urdf')]
+        arguments=[os.path.join(pkg_share, 'urdf','ur10.urdf')],
+    )
+
+    ign_pub = Node(
+        package=pkg_name,
+        executable='ign_publish',
+        output='screen',
     )
     # Follow node
     state = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        arguments=[os.path.join(pkg_share, 'urdf','ur10.urdf')]
-    )
+        arguments=[os.path.join(pkg_share, 'urdf','ur10.urdf')],
 
+    )
+    joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+    args = [f"/model/ur10/joint/{name}/0/cmd_pos@std_msgs/msg/Float32@ignition.msgs.Float" for name in joint_names]
     # Bridge
     bridge = Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
-        arguments=['/tf@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V',],
+        arguments=args,
         output='screen'
     )
 
@@ -83,10 +91,11 @@ def generate_launch_description():
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),
         gazebo,
+        #ign_pub,
         spawn,
         joint, 
         state,
         # follow,
         bridge,
-        rviz
+        #rviz
     ])

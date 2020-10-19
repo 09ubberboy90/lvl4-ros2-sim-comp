@@ -28,7 +28,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'vr_publish = simple_arm.vr_publish:main'
+            'vr_publish = simple_arm.vr_publish:main',
+            'ign_publish = simple_arm.ign_publisher:main'
         ],
     },
 )
