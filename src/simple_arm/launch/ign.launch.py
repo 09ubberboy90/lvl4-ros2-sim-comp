@@ -63,13 +63,13 @@ def generate_launch_description():
         arguments=[os.path.join(pkg_share, 'urdf','ur10.urdf')],
 
     )
-    joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
-    args = [f"/model/ur10/joint/{name}/0/cmd_pos@std_msgs/msg/Float32@ignition.msgs.Float" for name in joint_names]
+    # joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+    # args = [f"/model/ur10/joint/{name}/0/cmd_pos@std_msgs/msg/Float32@ignition.msgs.Float" for name in joint_names]
     # Bridge
     bridge = Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
-        arguments=args,
+        arguments=["/ign/ur10/joint_states@sensor_msgs/msg/JointState@ignition.msgs.Model"],
         output='screen'
     )
 
@@ -84,18 +84,15 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
           'ign_args',
-          default_value=[os.path.join(pkg_share, 'worlds', 'empty.sdf') +
-                         ' -v 2 --gui-config ' +
-                         os.path.join(pkg_share, 'configs', 'ignition.config'), ''],
+          default_value=[os.path.join(pkg_share, 'worlds', 'empty.sdf')],
           description='Ignition Gazebo arguments'),
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),
         gazebo,
-        #ign_pub,
+        ign_pub,
         spawn,
         joint, 
         state,
-        # follow,
-        bridge,
+        # bridge,
         #rviz
     ])
