@@ -63,13 +63,14 @@ def generate_launch_description():
         arguments=[os.path.join(pkg_share, 'urdf','ur10.urdf')],
 
     )
-    # joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+    joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
     # args = [f"/model/ur10/joint/{name}/0/cmd_pos@std_msgs/msg/Float32@ignition.msgs.Float" for name in joint_names]
+    args = [f"/robot/{name}@std_msgs/msg/Float64@ignition.msgs.Double" for name in joint_names]
     # Bridge
     bridge = Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
-        arguments=["/ign/ur10/joint_states@sensor_msgs/msg/JointState@ignition.msgs.Model"],
+        arguments=args,
         output='screen'
     )
 
@@ -93,6 +94,6 @@ def generate_launch_description():
         spawn,
         joint, 
         state,
-        # bridge,
+        bridge,
         #rviz
     ])

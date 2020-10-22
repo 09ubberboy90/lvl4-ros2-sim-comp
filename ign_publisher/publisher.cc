@@ -26,7 +26,8 @@
 
 /// \brief Flag used to break the publisher loop and terminate the program.
 static std::atomic<bool> g_terminatePub(false);
-std::map<std::string, ignition::transport::Node> joint_pub;
+std::map<std::string, ignition::transport::Node::Publisher> joint_pub;
+std::map<std::string, std::function<void(const ignition::msgs::Double&)>> func_map;
 //////////////////////////////////////////////////
 /// \brief Function callback executed when a SIGINT or SIGTERM signals are
 /// captured. This is used to break the infinite loop that publishes messages
@@ -37,40 +38,53 @@ void signal_handler(int _signal)
     g_terminatePub = true;
 }
 
+
+void publish_joint_name(std::string joint_name,const ignition::msgs::Double &_msg)
+{
+  std::string topic = "/model/ur10/joint/"+joint_name+"/0/cmd_pos";
+  std::cout << "Published "<< _msg.data() << " to " << topic<< std::endl;
+  if (!joint_pub[joint_name].Publish(_msg))
+  {
+    std::cout << "Failed to publish"<< std::endl;
+  }
+}
 //////////////////////////////////////////////////
 /// \brief Function called each time a topic update is received.
-void cb(const ignition::msgs::Model &_msg)
+void shoulder_pan_cb(const ignition::msgs::Double &_msg)
 {
-  std::cout << "Msg: " << _msg.joint_size() << std::endl;
-  for (auto &joint_name : _msg.joint()) 
-  {  
-    std::cout << joint_name.name() << std::endl;
-  }
-
-  // std::string topic = "/foo";
-
-  // auto pub = node.Advertise<ignition::msgs::Double>(topic);
-  // if (!pub)
-  // {
-  //   std::cerr << "Error advertising topic [" << topic << "]" << std::endl;
-  //   return -1;
-  // }
-
-  // // Prepare the message.
-  // ignition::msgs::StringMsg msg;
-  // msg.set_data("HELLO");
-
-  // // Publish messages at 1Hz.
-  // while (!g_terminatePub)
-  // {
-  //   if (!pub.Publish(msg))
-  //     break;
-
-  //   std::cout << "Publishing hello on topic [" << topic << "]" << std::endl;
-  //   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  // }
-
+  publish_joint_name("shoulder_pan_joint", _msg);
 }
+//////////////////////////////////////////////////
+/// \brief Function called each time a topic update is received.
+void shoulder_lift_cb(const ignition::msgs::Double &_msg)
+{
+  publish_joint_name("shoulder_lift_joint", _msg);
+}
+//////////////////////////////////////////////////
+/// \brief Function called each time a topic update is received.
+void elbow_cb(const ignition::msgs::Double &_msg)
+{
+  publish_joint_name("elbow_joint", _msg);
+}
+//////////////////////////////////////////////////
+/// \brief Function called each time a topic update is received.
+void wrist_1_cb(const ignition::msgs::Double &_msg)
+{
+  publish_joint_name("wrist_1_joint", _msg);
+}
+//////////////////////////////////////////////////
+/// \brief Function called each time a topic update is received.
+void wrist_2_cb(const ignition::msgs::Double &_msg)
+{
+  publish_joint_name("wrist_2_joint", _msg);
+}
+//////////////////////////////////////////////////
+/// \brief Function called each time a topic update is received.
+void wrist_3_cb(const ignition::msgs::Double &_msg)
+{
+  publish_joint_name("wrist_3_joint", _msg);
+}
+
 
 //////////////////////////////////////////////////
 int main(int argc, char **argv)
@@ -79,20 +93,29 @@ int main(int argc, char **argv)
   std::signal(SIGINT,  signal_handler);
   std::signal(SIGTERM, signal_handler);
 
+  func_map = {
+    {"shoulder_pan_joint",shoulder_pan_cb},
+    {"shoulder_lift_joint",shoulder_lift_cb},
+    {"elbow_joint",elbow_cb},
+    {"wrist_1_joint",wrist_1_cb},
+    {"wrist_2_joint",wrist_2_cb},
+    {"wrist_3_joint",wrist_3_cb},
+  };
   std::vector<std::string> joint_name = {"shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"};
-  // for (auto &topic_name : joint_name) 
-  // {  
-  //   joint_pub[topic_name] = ignition::transport::Node();
-  // }
+  
+  for (auto &topic_name : joint_name) 
+  {  
+    ignition::transport::Node listener;
+    ignition::transport::Node tmp;
+    std::string topic = "/model/ur10/joint/"+topic_name+"/0/cmd_pos";
+    joint_pub[topic_name] = tmp.Advertise<ignition::msgs::Double>(topic);
 
-  // Create a transport node and advertise a topic.
-  ignition::transport::Node listener;
-  std::string listener_topic = "/joint_states";
+    if (!listener.Subscribe("/robot/"+topic_name,func_map[topic_name] ))
+    {
+      std::cerr << "Error subscribing to topic [" << topic_name << "]" << std::endl;
+      return -1;
+    }
 
-  if (!listener.Subscribe(listener_topic, cb))
-  {
-    std::cerr << "Error subscribing to topic [" << listener_topic << "]" << std::endl;
-    return -1;
   }
 
   ignition::transport::waitForShutdown();
