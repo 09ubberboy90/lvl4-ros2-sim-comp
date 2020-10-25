@@ -42,7 +42,7 @@ void signal_handler(int _signal)
 void publish_joint_name(std::string joint_name,const ignition::msgs::Double &_msg)
 {
   std::string topic = "/model/ur10/joint/"+joint_name+"/0/cmd_pos";
-  std::cout << "Published "<< _msg.data() << " to " << topic<< std::endl;
+  std::cout << "Msg: " << _msg.data() << std::endl << std::endl;
   if (!joint_pub[joint_name].Publish(_msg))
   {
     std::cout << "Failed to publish"<< std::endl;
@@ -85,6 +85,14 @@ void wrist_3_cb(const ignition::msgs::Double &_msg)
   publish_joint_name("wrist_3_joint", _msg);
 }
 
+//////////////////////////////////////////////////
+/// \brief Function called each time a topic update is received.
+void cb(const ignition::msgs::Double &_msg)
+{
+  std::cout << "Msg: " << _msg.data() << std::endl << std::endl;
+
+}
+
 
 //////////////////////////////////////////////////
 int main(int argc, char **argv)
@@ -102,22 +110,32 @@ int main(int argc, char **argv)
     {"wrist_3_joint",wrist_3_cb},
   };
   std::vector<std::string> joint_name = {"shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"};
-  
-  for (auto &topic_name : joint_name) 
+  ignition::transport::Node node_list[joint_name.size()];
+  for (int i=0; i<joint_name.size(); i++) 
   {  
-    ignition::transport::Node listener;
-    ignition::transport::Node tmp;
-    std::string topic = "/model/ur10/joint/"+topic_name+"/0/cmd_pos";
-    joint_pub[topic_name] = tmp.Advertise<ignition::msgs::Double>(topic);
 
-    if (!listener.Subscribe("/robot/"+topic_name,func_map[topic_name] ))
+    auto topic_name = joint_name[i];
+    ignition::transport::Node pub;
+    std::string topic = "/model/ur10/joint/"+topic_name+"/0/cmd_pos";
+    joint_pub[topic_name] = pub.Advertise<ignition::msgs::Double>(topic);
+
+    if (!node_list[0].Subscribe("/robot/"+topic_name,func_map[topic_name] ))
     {
       std::cerr << "Error subscribing to topic [" << topic_name << "]" << std::endl;
       return -1;
     }
 
   }
+  std::string topic = "/foo";
 
+  // Subscribe to a topic by registering a callback.
+  if (!node_list[0].Subscribe("/robot/foo", cb))
+  {
+    std::cerr << "Error subscribing to topic [" << topic << "]" << std::endl;
+    return -1;
+  }
+
+  // Zzzzzz.
   ignition::transport::waitForShutdown();
 
   return 0;

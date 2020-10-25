@@ -10,11 +10,10 @@ include_directories(${CMAKE_BINARY_DIR})
 
 # Generate examples
 
-if (EXISTS "${CMAKE_SOURCE_DIR}/publisher.cc")
-  add_executable(publisher publisher.cc)
-  target_link_libraries(publisher ignition-transport${IGN_TRANSPORT_VER}::core)
+if (EXISTS "${CMAKE_SOURCE_DIR}/robot_publisher.cc")
+  add_executable(robot_publisher robot_publisher.cc)
+  target_link_libraries(robot_publisher ignition-transport${IGN_TRANSPORT_VER}::core)
 endif()
-
 
 if (MSVC)
   # Suppress Protobuf message generation warnings.
