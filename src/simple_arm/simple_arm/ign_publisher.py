@@ -22,8 +22,7 @@ class JointSub(Node):
             if pub is not None:
                 new_msg = Float64()
                 new_msg.data = msg.position[idx]
-                if msg.position[idx] != 0:
-                    pub.publish(new_msg)
+                pub.publish(new_msg)
             else:
                 self.custom_publishers[name] = self.create_publisher(Float64, f'/robot/{name}', 10)
 

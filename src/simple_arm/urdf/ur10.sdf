@@ -15,7 +15,7 @@
         </inertia>
       </inertial>
       <collision name='collision'>
-      <pose>0 0 0.019 0 -0 0</pose>
+        <pose>0 0 0.019 0 -0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.075</radius>
@@ -260,10 +260,10 @@
         </geometry>
       </visual>
     </link>
-    <!-- <joint name="world_fixed" type="fixed">
+    <joint name="world_fixed" type="fixed">
       <parent>world</parent>
       <child>base</child>
-    </joint> -->
+    </joint>
 
     <joint name='shoulder_pan_joint' type='revolute'>
       <child>shoulder</child>
@@ -279,18 +279,16 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <plugin
-    filename="ignition-gazebo-joint-position-controller-system"
-    name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>shoulder_pan_joint</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>2</i_gain>
-    <d_gain>0.2</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
+    <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>shoulder_pan_joint</joint_name>
+      <p_gain>20</p_gain>
+      <i_gain>0.05</i_gain>
+      <d_gain>0.1</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
 
     <joint name='shoulder_lift_joint' type='revolute'>
       <child>upper_arm</child>
@@ -306,18 +304,16 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <plugin
-    filename="ignition-gazebo-joint-position-controller-system"
-    name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>shoulder_lift_joint</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>2</i_gain>
-    <d_gain>0.2</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
+    <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>shoulder_lift_joint</joint_name>
+      <p_gain>20</p_gain>
+      <i_gain>0.05</i_gain>
+      <d_gain>0.1</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
 
     <joint name='elbow_joint' type='revolute'>
       <child>forearm</child>
@@ -333,18 +329,16 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <plugin
-    filename="ignition-gazebo-joint-position-controller-system"
-    name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>elbow_joint</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>2</i_gain>
-    <d_gain>0.2</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
+    <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>elbow_joint</joint_name>
+      <p_gain>20</p_gain>
+      <i_gain>0.05</i_gain>
+      <d_gain>0.1</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
 
     <joint name='wrist_1_joint' type='revolute'>
       <child>wrist_1</child>
@@ -360,18 +354,16 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <plugin
-    filename="ignition-gazebo-joint-position-controller-system"
-    name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>wrist_1_joint</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>2</i_gain>
-    <d_gain>0.2</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
+    <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>wrist_1_joint</joint_name>
+      <p_gain>20</p_gain>
+      <i_gain>0.05</i_gain>
+      <d_gain>0.1</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
 
     <joint name='wrist_2_joint' type='revolute'>
       <child>wrist_2</child>
@@ -387,18 +379,16 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <plugin
-    filename="ignition-gazebo-joint-position-controller-system"
-    name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>wrist_2_joint</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>2</i_gain>
-    <d_gain>0.2</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
+    <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>wrist_2_joint</joint_name>
+      <p_gain>20</p_gain>
+      <i_gain>0.05</i_gain>
+      <d_gain>0.1</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
 
     <joint name='wrist_3_joint' type='revolute'>
       <child>wrist_3</child>
@@ -414,18 +404,16 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <plugin
-    filename="ignition-gazebo-joint-position-controller-system"
-    name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>wrist_3_joint</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>2</i_gain>
-    <d_gain>0.2</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
+    <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>wrist_3_joint</joint_name>
+      <p_gain>20</p_gain>
+      <i_gain>0.05</i_gain>
+      <d_gain>0.1</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
 
   </model>
 </sdf>

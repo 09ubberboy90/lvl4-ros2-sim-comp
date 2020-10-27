@@ -126,15 +126,6 @@ int main(int argc, char **argv)
     }
 
   }
-  std::string topic = "/foo";
-
-  // Subscribe to a topic by registering a callback.
-  if (!node_list[0].Subscribe("/robot/foo", cb))
-  {
-    std::cerr << "Error subscribing to topic [" << topic << "]" << std::endl;
-    return -1;
-  }
-
   // Zzzzzz.
   ignition::transport::waitForShutdown();
 

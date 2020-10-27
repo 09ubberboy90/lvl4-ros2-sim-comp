@@ -69,7 +69,7 @@
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
     </physics>
-    <model name='ground_plane'>
+    <!-- <model name='ground_plane'>
       <static>1</static>
       <link name='link'>
         <collision name='collision'>
@@ -103,6 +103,6 @@
       </link>
       <plugin name='__default__' filename='__default__'/>
       <pose>0 0 0 0 -0 0</pose>
-    </model>
+    </model> -->
   </world>
 </sdf>
