@@ -16,7 +16,7 @@ setup(
         ('share/' + package_name + "/models/ur10/meshes/collision", glob("models/ur10/meshes/collision/*.*")),
         ('share/' + package_name + '/launch', glob('launch/*.launch.py')),
         ('share/' + package_name + '/urdf', glob('urdf/*.*')),
-        ('share/' + package_name + '/configs', glob('configs/*.config')),
+        ('share/' + package_name + '/configs', glob('configs/*.*')),
         ('share/' + package_name + '/worlds', glob('worlds/*.sdf')),
     ],
     install_requires=['setuptools'],

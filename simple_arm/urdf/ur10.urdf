@@ -30,7 +30,7 @@
     <child link="shoulder_link"/>
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.1273"/>
     <axis xyz="0 0 1"/>
-    <limit effort="330.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="2.16"/>
+    <limit effort="330.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="2.16"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <link name="shoulder_link">
@@ -58,7 +58,7 @@
     <child link="upper_arm_link"/>
     <origin rpy="0.0 1.5707963267948966 0.0" xyz="0.0 0.220941 0.0"/>
     <axis xyz="0 1 0"/>
-    <limit effort="330.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="2.16"/>
+    <limit effort="330.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="2.16"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <link name="upper_arm_link">
@@ -114,7 +114,7 @@
     <child link="wrist_1_link"/>
     <origin rpy="0.0 1.5707963267948966 0.0" xyz="0.0 0.0 0.5723"/>
     <axis xyz="0 1 0"/>
-    <limit effort="54.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="3.2"/>
+    <limit effort="54.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.2"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <link name="wrist_1_link">
@@ -142,7 +142,7 @@
     <child link="wrist_2_link"/>
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.1149 0.0"/>
     <axis xyz="0 0 1"/>
-    <limit effort="54.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="3.2"/>
+    <limit effort="54.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.2"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <link name="wrist_2_link">
@@ -170,7 +170,7 @@
     <child link="wrist_3_link"/>
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.1157"/>
     <axis xyz="0 1 0"/>
-    <limit effort="54.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="3.2"/>
+    <limit effort="54.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.2"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <link name="wrist_3_link">

@@ -27,7 +27,7 @@ def generate_launch_description():
 
     urdf = xacro.process(xacro_file)
     params = {'robot_description': urdf}
-
+    
     state = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -54,7 +54,7 @@ def generate_launch_description():
     return LaunchDescription([
         gazebo,
         state,
-        joint,
+        #joint,
         spawn_entity,
-        rviz
+        #rviz
     ])
