@@ -32,7 +32,7 @@ Floor {
   appearance ThreadMetalPlate {
   }
 }
-UR5e {
+UR10e {
   translation 0 0 0.6
   rotation 0 0 -1 0.2617981309082
   name "base_link"
