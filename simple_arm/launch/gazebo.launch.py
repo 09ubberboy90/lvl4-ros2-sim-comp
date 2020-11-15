@@ -15,13 +15,16 @@ def generate_launch_description():
     pkg_name = "simple_arm"
     pkg_share = get_package_share_directory(pkg_name)
 
+    config_name = "ur_configs"
+    config_share = get_package_share_directory(config_name)
+
     gazebo = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
                     get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
              )
 
 
-    xacro_file = os.path.join(pkg_share,
+    xacro_file = os.path.join(config_share,
                               'urdf',
                               'ur10_robot.urdf.xacro')
 
@@ -56,5 +59,5 @@ def generate_launch_description():
         state,
         #joint,
         spawn_entity,
-        #rviz
+        rviz
     ])

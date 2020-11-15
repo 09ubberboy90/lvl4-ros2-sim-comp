@@ -7,34 +7,20 @@ from setuptools import setup
 
 package_name = 'webots_simple_arm'
 worlds = [
-    'worlds/universal_robot_multiple.wbt',
     'worlds/universal_robot_rviz.wbt',
     'worlds/universal_robot.wbt',
-    'worlds/universal_robot_lidar.wbt',
-    'worlds/.universal_robot_multiple.wbproj',
-    'worlds/.universal_robot_rviz.wbproj',
-    'worlds/.universal_robot.wbproj',
-    'worlds/.universal_robot_lidar.wbproj'
 ]
-textures = []
-for rootPath, dirNames, fileNames in os.walk('worlds/textures'):
-    for fileName in fnmatch.filter(fileNames, '*.jpg'):
-        filePath = os.path.relpath(os.path.join(rootPath, fileName))
-        textures.append(filePath)
+
 launchers = [
     'launch/universal_robot.launch.py',
-    'launch/universal_robot_multiple.launch.py',
     'launch/universal_robot_rviz.launch.py',
-    'launch/universal_robot_rviz_dynamic.launch.py'
 ]
 
 data_files = []
 data_files.append(('share/ament_index/resource_index/packages', ['resource/' + package_name]))
 data_files.append(('share/' + package_name, launchers))
 data_files.append(('share/' + package_name + '/worlds', worlds))
-data_files.append(('share/' + package_name + '/worlds/textures', textures))
 data_files.append(('share/' + package_name, ['package.xml']))
-data_files.append(('share/' + package_name + '/resource', ['resource/view_robot_dynamic.rviz']))
 
 setup(
     name=package_name,

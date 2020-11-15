@@ -96,7 +96,7 @@ int main(int argc, char * argv[])
     node->get_node_graph_interface(),
     node->get_node_logging_interface(),
     node->get_node_waitables_interface(),
-    "/arm_controller/follow_joint_trajectory");
+    "/follow_joint_trajectory");
 
   bool response =
     action_client->wait_for_action_server(std::chrono::seconds(5));
@@ -116,19 +116,25 @@ int main(int argc, char * argv[])
   trajectory_msgs::msg::JointTrajectoryPoint point;
   point.time_from_start = rclcpp::Duration::from_seconds(0.0);  // start asap
   point.positions.resize(joint_names.size());
-
+  point.velocities.assign(joint_names.size(), 0.1);
+  point.accelerations.assign(joint_names.size(), 0.1);
   point.positions[0] = 0.0;
 
   trajectory_msgs::msg::JointTrajectoryPoint point2;
-  point2.time_from_start = rclcpp::Duration::from_seconds(1.0);
+  point2.time_from_start = rclcpp::Duration::from_seconds(5.0);
   point2.positions.resize(joint_names.size());
+  point2.velocities.assign(joint_names.size(), 0.1);
+  point2.accelerations.assign(joint_names.size(), 0.1);
   point2.positions[0] = 2.0;
-  point2.positions[1] = 2.0;
+  point2.positions[1] = -2.0;
+  point2.positions[2] = 2.0;
 
 
   trajectory_msgs::msg::JointTrajectoryPoint point4;
-  point4.time_from_start = rclcpp::Duration::from_seconds(15.0);
+  point4.time_from_start = rclcpp::Duration::from_seconds(10.0);
   point4.positions.resize(joint_names.size());
+  point4.velocities.assign(joint_names.size(), 0.1);
+  point4.accelerations.assign(joint_names.size(), 0.1);
   point4.positions[0] = 0.0;
   point4.positions[1] = 0.0;
   point4.positions[2] = 0.0;

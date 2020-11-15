@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(gazebo_simple_arm_control)
+project(simple_arm_control)
 
 # Default to C11
 if(NOT CMAKE_C_STANDARD)
@@ -24,8 +24,14 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
 )
 
-add_executable(ur10_position examples/ur10_position.cpp)
-ament_target_dependencies(ur10_position
+add_executable(gazebo_controller controllers/gazebo_controller.cpp)
+ament_target_dependencies(gazebo_controller
+  rclcpp
+  rclcpp_action
+  control_msgs
+)
+add_executable(webots_controller controllers/webots_controller.cpp)
+ament_target_dependencies(webots_controller
   rclcpp
   rclcpp_action
   control_msgs
@@ -39,7 +45,7 @@ if(BUILD_TESTING)
 endif()
 
 ## Install
-install(TARGETS ur10_position
+install(TARGETS gazebo_controller webots_controller
   DESTINATION lib/${PROJECT_NAME}
 )
 

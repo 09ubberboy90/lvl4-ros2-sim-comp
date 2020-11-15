@@ -38,28 +38,20 @@ def generate_launch_description():
         ),
         launch_arguments={
             'executable': 'webots_robotic_arm_node',
-            'world': os.path.join(package_dir, 'worlds', 'universal_robot.wbt'),
+            'world': os.path.join(package_dir, 'worlds', 'universal_robot_rviz.wbt'),
         }.items()
     )
+    config_name = "ur_configs"
+    config_share = get_package_share_directory(config_name)
 
     # Copy .rviz config file and update path ro URDF file.
-    templateRvizFile = os.path.join(get_package_share_directory('webots_ros2_ur_e_description'),
-                                    'rviz', 'view_robot') + '.rviz'
-    home = Path.home()
-    customRvizFile = os.path.join(home, 'webots_ros2_ur_e_description.rviz')
-    if not os.path.exists(os.path.join(home, 'webots_ros2_ur_e_description.rviz')):
-        with open(templateRvizFile, 'r') as f:
-            content = f.read()
-            content = content.replace('package://webots_ros2_ur_e_description',
-                                      get_package_share_directory('webots_ros2_ur_e_description'))
-            with open(customRvizFile, 'w') as f2:
-                f2.write(content)
+    rviz_file = os.path.join(config_share,'rviz', 'webots_ur10.rviz')
     # Rviz node
     rviz = launch_ros.actions.Node(package='rviz2',
-                                   node_executable='rviz2',
-                                   arguments=['-d', customRvizFile],
+                                   executable='rviz2',
+                                   arguments=['-d', rviz_file],
                                    output='screen')
     return launch.LaunchDescription([
-        rviz,
+        #rviz,
         webots
     ])

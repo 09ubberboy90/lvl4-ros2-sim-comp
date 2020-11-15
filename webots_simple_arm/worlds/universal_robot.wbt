@@ -32,7 +32,7 @@ Floor {
   appearance ThreadMetalPlate {
   }
 }
-UR5e {
+UR10 {
   translation 0 0 0.6
   rotation 0 0 -1 1.570796267678159
   controller "<extern>"
