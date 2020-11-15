@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="RHEX">
   
-  <xacro:include filename="$(find simple_arm)/urdf/ur.transmission.xacro" />
-  <xacro:include filename="$(find simple_arm)/urdf/ur.gazebo.xacro" />
+  <xacro:include filename="$(find ur_configs)/urdf/ur.transmission.xacro" />
+  <xacro:include filename="$(find ur_configs)/urdf/ur.gazebo.xacro" />
   <xacro:macro name="cylinder_inertial" params="radius length mass *origin">
     <inertial>
       <mass value="${mass}" />
@@ -67,7 +67,7 @@
     <link name="${prefix}base_link">
       <visual>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/visual/base.dae" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/visual/base.dae" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 1.0" />
@@ -75,7 +75,7 @@
       </visual>
       <collision>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/collision/base.stl" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/collision/base.stl" />
         </geometry>
       </collision>
       <xacro:cylinder_inertial radius="0.075" length="0.038" mass="${base_mass}">
@@ -106,7 +106,7 @@
     <link name="${prefix}shoulder_link">
       <visual>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/visual/shoulder.dae" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/visual/shoulder.dae" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 1.0" />
@@ -114,7 +114,7 @@
       </visual>
       <collision>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/collision/shoulder.stl" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/collision/shoulder.stl" />
         </geometry>
       </collision>
       <xacro:cylinder_inertial radius="0.075" length="0.178" mass="${shoulder_mass}">
@@ -145,7 +145,7 @@
     <link name="${prefix}upper_arm_link">
       <visual>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/visual/upperarm.dae" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/visual/upperarm.dae" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 1.0" />
@@ -153,7 +153,7 @@
       </visual>
       <collision>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/collision/upperarm.stl" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/collision/upperarm.stl" />
         </geometry>
       </collision>
       <xacro:cylinder_inertial radius="0.075" length="${-a2}" mass="${upper_arm_mass}">
@@ -184,7 +184,7 @@
     <link name="${prefix}forearm_link">
       <visual>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/visual/forearm.dae" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/visual/forearm.dae" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 1.0" />
@@ -192,7 +192,7 @@
       </visual>
       <collision>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/collision/forearm.stl" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/collision/forearm.stl" />
         </geometry>
       </collision>
       <xacro:cylinder_inertial radius="0.075" length="${-a3}" mass="${forearm_mass}">
@@ -223,7 +223,7 @@
     <link name="${prefix}wrist_1_link">
       <visual>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/visual/wrist1.dae" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/visual/wrist1.dae" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 1.0" />
@@ -231,7 +231,7 @@
       </visual>
       <collision>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/collision/wrist1.stl" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/collision/wrist1.stl" />
         </geometry>
       </collision>
       <xacro:cylinder_inertial radius="0.075" length="0.12" mass="${wrist_1_mass}">
@@ -262,7 +262,7 @@
     <link name="${prefix}wrist_2_link">
       <visual>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/visual/wrist2.dae" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/visual/wrist2.dae" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 1.0" />
@@ -270,7 +270,7 @@
       </visual>
       <collision>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/collision/wrist2.stl" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/collision/wrist2.stl" />
         </geometry>
       </collision>
       <xacro:cylinder_inertial radius="0.075" length="0.12" mass="${wrist_2_mass}">
@@ -301,7 +301,7 @@
     <link name="${prefix}wrist_3_link">
       <visual>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/visual/wrist3.dae" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/visual/wrist3.dae" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 1.0" />
@@ -309,7 +309,7 @@
       </visual>
       <collision>
         <geometry>
-          <mesh filename="file://$(find simple_arm)/models/ur10/meshes/collision/wrist3.stl" />
+          <mesh filename="file://$(find ur_configs)/meshes/ur10/meshes/collision/wrist3.stl" />
         </geometry>
       </collision>
       <xacro:cylinder_inertial radius="0.045" length="0.0305" mass="${wrist_3_mass}">

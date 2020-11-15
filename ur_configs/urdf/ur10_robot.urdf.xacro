@@ -5,18 +5,18 @@
   <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
 
   <!-- ur10 -->
-  <xacro:include filename="$(find simple_arm)/urdf/ur10.urdf.xacro" />
+  <xacro:include filename="$(find ur_configs)/urdf/ur10.urdf.xacro" />
 
   <!-- arm -->
   <xacro:ur10_robot prefix="" joint_limited="true"
     transmission_hw_interface="$(arg transmission_hw_interface)"
   />
-  <gazebo>
+  <!-- <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
       <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
       <robot_param>robot_description</robot_param>
       <robot_param_node>robot_state_publisher</robot_param_node>
-      <parameters>$(find simple_arm)/configs/arm_controller_ur10.yaml</parameters>
+      <parameters>$(find ur_configs)/configs/arm_controller_ur10.yaml</parameters>
     </plugin>
 
   </gazebo>
@@ -27,6 +27,6 @@
     <parent link="world" />
     <child link = "base_link" />
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-  </joint>
+  </joint> -->
 
 </robot>
