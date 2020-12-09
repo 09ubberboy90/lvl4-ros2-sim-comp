@@ -55,7 +55,7 @@ def generate_launch_description():
                                   parameters=[{'controller_name': 'fake_joint_trajectory_controller'},
                                               os.path.join(get_package_share_directory("ur_configs"), "configs", "controllers.yaml"),
                                               os.path.join(get_package_share_directory("ur_configs"), "configs", "start_positions.yaml"),
-                                              robot_description, robot_kinematic])
+                                              robot_description])
 
     container = ComposableNodeContainer(
         name='moveit_servo_demo_container',
