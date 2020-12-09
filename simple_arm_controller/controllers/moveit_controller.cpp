@@ -90,11 +90,6 @@ public:
 
     // Create Servo and start it
     servo_ = std::make_unique<moveit_servo::Servo>(node_, servo_parameters, planning_scene_monitor_);
-    while (!servo_->waitForInitialized() && rclcpp::ok())
-    {
-      rclcpp::Clock& clock = *node_->get_clock();
-      RCLCPP_WARN_STREAM_THROTTLE(LOGGER, clock, 5000, "Waiting for ServoCalcs to recieve joint states");
-    }
     servo_->start();
 
     timer_ = node_->create_wall_timer(50ms, std::bind(&ServoCppDemo::publishCommands, this));

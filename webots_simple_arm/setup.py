@@ -21,13 +21,14 @@ data_files.append(('share/ament_index/resource_index/packages', ['resource/' + p
 data_files.append(('share/' + package_name, launchers))
 data_files.append(('share/' + package_name + '/worlds', worlds))
 data_files.append(('share/' + package_name, ['package.xml']))
+data_files.append(('share/' + package_name +'/protos', ['protos/panda.proto']))
 
 setup(
     name=package_name,
-    version='1.0.2',
-    packages=[],
+    version='0.0.0',
+    packages=[package_name],
     data_files=data_files,
-    install_requires=['setuptools', 'launch'],
+    install_requires=['setuptools'],
     zip_safe=True,
     author='Cyberbotics',
     author_email='support@cyberbotics.com',
@@ -44,6 +45,8 @@ setup(
     license='Apache License, Version 2.0',
     tests_require=['pytest'],
     entry_points={
-        'launch.frontend.launch_extension': ['launch_ros = launch_ros']
+        'console_scripts': [
+            'panda = webots_simple_arm.panda:main',
+        ],
     }
 )
