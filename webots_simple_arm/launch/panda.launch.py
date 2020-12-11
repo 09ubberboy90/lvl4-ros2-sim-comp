@@ -17,41 +17,25 @@
 """Launch Webots and the controller."""
 
 import os
-
-from pathlib import Path
-
-import launch
-import launch_ros.actions
-
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-
+from launch import LaunchDescription
 from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    # Webots
     package_dir = get_package_share_directory('webots_simple_arm')
+
     webots = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory('webots_ros2_core'), 'launch', 'robot_launch.py')
         ),
         launch_arguments={
             'executable': 'webots_robotic_arm_node',
-            'world': os.path.join(package_dir, 'worlds', 'universal_robot_rviz.wbt'),
+            'world': os.path.join(package_dir, 'worlds', 'panda.wbt')
         }.items()
     )
-    config_name = "ur_configs"
-    config_share = get_package_share_directory(config_name)
 
-    # Copy .rviz config file and update path ro URDF file.
-    rviz_file = os.path.join(config_share,'rviz', 'webots_ur10.rviz')
-    # Rviz node
-    rviz = launch_ros.actions.Node(package='rviz2',
-                                   executable='rviz2',
-                                   arguments=['-d', rviz_file],
-                                   output='screen')
-    return launch.LaunchDescription([
-        #rviz,
+    return LaunchDescription([
         webots
     ])
