@@ -7,13 +7,11 @@ from setuptools import setup
 
 package_name = 'webots_simple_arm'
 worlds = [
-    'worlds/universal_robot_rviz.wbt',
-    'worlds/universal_robot.wbt',
+    'worlds/panda.wbt',
 ]
 
 launchers = [
-    'launch/universal_robot.launch.py',
-    'launch/universal_robot_rviz.launch.py',
+    'launch/panda.launch.py',
 ]
 
 data_files = []
