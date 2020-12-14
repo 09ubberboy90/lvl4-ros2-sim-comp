@@ -11,7 +11,8 @@ except Exception as e:
     raise e
 class PandaNode(WebotsNode):
     def __init__(self, args=None):
-        super().__init__("panda", args)
+        print(args)
+        super().__init__("panda",args, enableJointState=False)
         os.environ['WEBOTS_ROBOT_NAME'] = "panda"
         self.nodes = {}
         for i in range(self.robot.getNumberOfDevices()):
@@ -27,6 +28,7 @@ class PandaNode(WebotsNode):
             10)
 
     def listener_callback(self, msg:JointState):
+        # TODO: Change to listen to join trajectory
         for idx, name in enumerate(msg.name):
             self.nodes[name].setPosition(msg.position[idx])
 

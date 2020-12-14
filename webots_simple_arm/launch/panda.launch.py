@@ -31,8 +31,11 @@ def generate_launch_description():
             os.path.join(get_package_share_directory('webots_ros2_core'), 'launch', 'robot_launch.py')
         ),
         launch_arguments={
-            'executable': 'webots_robotic_arm_node',
-            'world': os.path.join(package_dir, 'worlds', 'panda.wbt')
+            "package":"webots_simple_arm",
+            'executable': 'panda_controller',
+            'world': os.path.join(package_dir, 'worlds', 'panda.wbt'),
+            "publish_tf":"False",
+            "mode":"run"
         }.items()
     )
 

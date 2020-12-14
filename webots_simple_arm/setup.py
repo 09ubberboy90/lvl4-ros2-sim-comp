@@ -44,7 +44,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'panda = webots_simple_arm.panda:main',
+            'panda_controller = webots_simple_arm.panda:main',
         ],
     }
 )
