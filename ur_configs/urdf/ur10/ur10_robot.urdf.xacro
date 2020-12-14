@@ -5,7 +5,7 @@
   <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
 
   <!-- ur10 -->
-  <xacro:include filename="$(find ur_configs)/urdf/ur10.urdf.xacro" />
+  <xacro:include filename="$(find ur_configs)/urdf/ur10/ur10.urdf.xacro" />
 
   <!-- arm -->
   <xacro:ur10_robot prefix="" joint_limited="true"
