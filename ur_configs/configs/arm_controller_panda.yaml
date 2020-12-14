@@ -1,0 +1,22 @@
+arm_controller:
+  ros__parameters:
+    type: joint_trajectory_controller/JointTrajectoryController
+    joints:
+        - panda_joint1
+        - panda_joint2
+        - panda_joint3
+        - panda_joint4
+        - panda_joint5
+        - panda_joint6
+        - panda_joint7
+    state_publish_rate: 50
+    action_monitor_rate: 50
+
+
+joint_state_controller:
+  ros__parameters:
+    type: joint_state_controller/JointStateController
+    publish_rate: 100
+
+  
+

@@ -12,6 +12,8 @@ worlds = [
 
 launchers = [
     'launch/panda.launch.py',
+    'launch/panda_trajectory.launch.py',
+    'launch/moveit_webots.launch.py',
 ]
 
 data_files = []

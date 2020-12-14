@@ -4,6 +4,7 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="panda">
+  <link name="world"/>
   <joint name="panda_to_world" type="fixed">
     <parent link="world"/>
     <child link="panda_link0"/>
@@ -445,4 +446,12 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
+  <gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
+      <robot_param>robot_description</robot_param>
+      <robot_param_node>robot_state_publisher</robot_param_node>
+      <parameters>/home/ubb/Documents/PersonalProject/install/ur_configs/share/ur_configs/configs/arm_controller_panda.yaml</parameters>
+    </plugin>
+  </gazebo>
 </robot>

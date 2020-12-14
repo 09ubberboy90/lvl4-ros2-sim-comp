@@ -19,7 +19,7 @@ find_package(control_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(moveit_servo REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
 
 install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
@@ -42,16 +42,9 @@ ament_target_dependencies(moveit_controller
   rclcpp
   rclcpp_action
   control_msgs
-  moveit_servo
+  moveit_ros_planning_interface
 )
 
-add_executable(control_test.cpp controllers/control_test.cpp)
-ament_target_dependencies(control_test.cpp
-  rclcpp
-  rclcpp_action
-  control_msgs
-  moveit_servo
-)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
@@ -61,7 +54,7 @@ if(BUILD_TESTING)
 endif()
 
 ## Install
-install(TARGETS gazebo_controller webots_controller moveit_controller control_test.cpp
+install(TARGETS gazebo_controller webots_controller moveit_controller
   DESTINATION lib/${PROJECT_NAME}
 )
 

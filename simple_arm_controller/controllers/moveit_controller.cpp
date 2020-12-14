@@ -1,168 +1,192 @@
-/*********************************************************************
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2020, PickNik LLC
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of PickNik LLC nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *********************************************************************/
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
 
-/*      Title     : servo_cpp_interface_demo.cpp
- *      Project   : moveit_servo
- *      Created   : 07/13/2020
- *      Author    : Adam Pettinger
- */
+#include <moveit_msgs/msg/display_robot_state.hpp>
+#include <moveit_msgs/msg/display_trajectory.hpp>
 
-// ROS
-#include <rclcpp/rclcpp.hpp>
+#include <moveit_msgs/msg/attached_collision_object.hpp>
+#include <moveit_msgs/msg/collision_object.hpp>
 
-// Servo
-#include <moveit_servo/servo_parameters.cpp>
-#include <moveit_servo/servo.h>
-#include <moveit/planning_scene_monitor/planning_scene_monitor.h>
+#include <moveit/macros/console_colors.h>
+// https://ros-planning.github.io/moveit_tutorials/doc/move_group_interface/move_group_interface_tutorial.html
+#include <memory>
+#include <string>
+#include <vector>
 
-using namespace std::chrono_literals;
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
 
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_servo.servo_demo_node.cpp");
+#include "control_msgs/action/follow_joint_trajectory.hpp"
 
-class ServoCppDemo
+std::shared_ptr<rclcpp::Node> node;
+bool common_goal_accepted = false;
+rclcpp_action::ResultCode common_resultcode = rclcpp_action::ResultCode::UNKNOWN;
+int common_action_result_code = control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL;
+
+void common_goal_response(
+  std::shared_future<rclcpp_action::ClientGoalHandle
+  <control_msgs::action::FollowJointTrajectory>::SharedPtr> future)
 {
-public:
-  ServoCppDemo(rclcpp::Node::SharedPtr node) : node_(node), count_(0)
-  {
-    // Create the planning_scene_monitor
-    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
-    planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(
-        node_, "robot_description", tf_buffer_, "planning_scene_monitor");
-
-    // Get the planning_scene_monitor to publish scene diff's for RViz visualization
-    if (planning_scene_monitor_->getPlanningScene())
-    {
-      planning_scene_monitor_->startStateMonitor("/joint_states");
-      planning_scene_monitor_->setPlanningScenePublishingFrequency(25);
-      planning_scene_monitor_->startPublishingPlanningScene(planning_scene_monitor::PlanningSceneMonitor::UPDATE_SCENE,
-                                                            "/moveit_servo/publish_planning_scene");
-      planning_scene_monitor_->startSceneMonitor();
-    }
-    else
-    {
-      RCLCPP_ERROR(LOGGER, "Planning scene not configured");
-    }
-
-    // We need 2 different publishers for the different command types
-    joint_cmd_pub_ = node_->create_publisher<control_msgs::msg::JointJog>("servo_server/delta_joint_cmds", 10);
-    twist_cmd_pub_ = node_->create_publisher<geometry_msgs::msg::TwistStamped>("servo_server/delta_twist_cmds", 10);
+  RCLCPP_DEBUG(
+    node->get_logger(), "common_goal_response time: %f",
+    rclcpp::Clock().now().seconds());
+  auto goal_handle = future.get();
+  if (!goal_handle) {
+    common_goal_accepted = false;
+    printf("Goal rejected\n");
+  } else {
+    common_goal_accepted = true;
+    printf("Goal accepted\n");
   }
+}
 
-  void start()
-  {
-    // Get Servo Parameters
-    auto servo_parameters = std::make_shared<moveit_servo::ServoParameters>();
-    if (!moveit_servo::readParameters(servo_parameters, node_, LOGGER))
-    {
-      RCLCPP_ERROR(LOGGER, "Could not get parameters");
-    }
-
-    // Create Servo and start it
-    servo_ = std::make_unique<moveit_servo::Servo>(node_, servo_parameters, planning_scene_monitor_);
-    servo_->start();
-
-    timer_ = node_->create_wall_timer(50ms, std::bind(&ServoCppDemo::publishCommands, this));
+void common_result_response(
+  const rclcpp_action::ClientGoalHandle
+  <control_msgs::action::FollowJointTrajectory>::WrappedResult & result)
+{
+  printf("common_result_response time: %f\n", rclcpp::Clock().now().seconds());
+  common_resultcode = result.code;
+  common_action_result_code = result.result->error_code;
+  switch (result.code) {
+    case rclcpp_action::ResultCode::SUCCEEDED:
+      printf("SUCCEEDED result code\n");
+      break;
+    case rclcpp_action::ResultCode::ABORTED:
+      printf("Goal was aborted\n");
+      return;
+    case rclcpp_action::ResultCode::CANCELED:
+      printf("Goal was canceled\n");
+      return;
+    default:
+      printf("Unknown result code\n");
+      return;
   }
+}
 
-private:
-  rclcpp::Node::SharedPtr node_;
-
-  rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr joint_cmd_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr twist_cmd_pub_;
-
-  size_t count_;
-
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::shared_ptr<planning_scene_monitor::PlanningSceneMonitor> planning_scene_monitor_;
-  std::unique_ptr<moveit_servo::Servo> servo_;
-
-  rclcpp::TimerBase::SharedPtr timer_;
-
-  void publishCommands()
-  {
-    // Publish joint commands for a little bit
-    if (count_ < 100)
-    {
-      auto msg = std::make_unique<control_msgs::msg::JointJog>();
-      msg->header.stamp = node_->now();
-      msg->joint_names.push_back("shoulder_lift_joint");
-      msg->velocities.push_back(0.3);
-      joint_cmd_pub_->publish(std::move(msg));
-      ++count_;
-    }
-    // Then switch to twist commands
-    else
-    {
-      auto msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
-      msg->header.stamp = node_->now();
-      msg->header.frame_id = "base_link";
-      msg->twist.linear.x = 0.3;
-      msg->twist.angular.z = 0.5;
-      twist_cmd_pub_->publish(std::move(msg));
-    }
+void common_feedback(
+  rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr,
+  const std::shared_ptr<const control_msgs::action::FollowJointTrajectory::Feedback> feedback)
+{
+  std::cout << "feedback->desired.positions :";
+  for (auto & x : feedback->desired.positions) {
+    std::cout << x << "\t";
   }
-};
+  std::cout << std::endl;
+  std::cout << "feedback->desired.velocities :";
+  for (auto & x : feedback->desired.velocities) {
+    std::cout << x << "\t";
+  }
+  std::cout << std::endl;
+}
+
+void prompt(const std::string& message)
+{
+  printf(MOVEIT_CONSOLE_COLOR_GREEN "\n%s" MOVEIT_CONSOLE_COLOR_RESET, message.c_str());
+  fflush(stdout);
+  while (std::cin.get() != '\n' && rclcpp::ok())
+    ;
+}
+
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("move_group_demo");
 
 int main(int argc, char** argv)
 {
+  
   rclcpp::init(argc, argv);
+
+  node = std::make_shared<rclcpp::Node>("trajectory_test_node");
+
+  std::cout << "node created" << std::endl;
+
+  rclcpp_action::Client<control_msgs::action::FollowJointTrajectory>::SharedPtr action_client;
+  action_client = rclcpp_action::create_client<control_msgs::action::FollowJointTrajectory>(
+    node->get_node_base_interface(),
+    node->get_node_graph_interface(),
+    node->get_node_logging_interface(),
+    node->get_node_waitables_interface(),
+    "/follow_joint_trajectory");
+
+  bool response =
+    action_client->wait_for_action_server(std::chrono::seconds(5));
+  if (!response) {
+    throw std::runtime_error("could not get action server");
+  }
+
+
+
+
+  
   rclcpp::NodeOptions node_options;
-  node_options.use_intra_process_comms(true);
-  auto node = std::make_shared<rclcpp::Node>("servo_demo_node", node_options);
+  node_options.automatically_declare_parameters_from_overrides(true);
+  auto move_group_node = rclcpp::Node::make_shared("move_group_interface_tutorial", node_options);
+  // For current state monitor
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(move_group_node);
+  std::thread([&executor]() { executor.spin(); }).detach();
 
-  // Pause for RViz to come up..
-  rclcpp::sleep_for(std::chrono::seconds(4));
+  static const std::string PLANNING_GROUP = "panda_arm";
 
-  // We need to initialize the planning_scene_monitor here before publishing the collision object
-  ServoCppDemo demo(node);
+  moveit::planning_interface::MoveGroupInterface move_group(move_group_node, PLANNING_GROUP);
+
+  moveit::planning_interface::PlanningSceneInterface planning_scene_interface(move_group_node->get_name());
+
+  // Planning to a Pose goal
+  geometry_msgs::msg::Pose target_pose1;
+  target_pose1.orientation.w = 1.0;
+  target_pose1.position.x = 0.28;
+  target_pose1.position.y = -0.2;
+  target_pose1.position.z = 0.5;
+  move_group.setPoseTarget(target_pose1);
+
+  // Now, we call the planner to compute the plan and visualize it.
+  // Note that we are just planning, not asking move_group
+  // to actually move the robot.
+  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+  bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+  RCLCPP_INFO(LOGGER, "Plan 1 (pose goal) %s", success ? "SUCCEEDED" : "FAILED");
 
 
-  moveit_msgs::msg::PlanningScene ps;
-  ps.is_diff = true;
 
-  // Publish the collision object to the planning scene
-  auto scene_pub = node->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", 10);
-  scene_pub->publish(ps);
+  // Moving to a pose goal
+  move_group.asyncMove();
+    rclcpp_action::Client<control_msgs::action::FollowJointTrajectory>::SendGoalOptions opt;
+  opt.goal_response_callback = std::bind(common_goal_response, std::placeholders::_1);
+  opt.result_callback = std::bind(common_result_response, std::placeholders::_1);
+  opt.feedback_callback = std::bind(common_feedback, std::placeholders::_1, std::placeholders::_2);
 
-  // Start the Servo object, and start publishing commands to it
-  demo.start();
+  control_msgs::action::FollowJointTrajectory_Goal goal_msg;
+  goal_msg.goal_time_tolerance = rclcpp::Duration::from_seconds(1.0);
+  goal_msg.trajectory = my_plan.trajectory_.joint_trajectory;
 
-  // Spin
-  auto executor = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
-  executor->add_node(node);
-  executor->spin();
+  auto goal_handle_future = action_client->async_send_goal(goal_msg, opt);
 
+  if (rclcpp::spin_until_future_complete(node, goal_handle_future) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    RCLCPP_ERROR(node->get_logger(), "send goal call failed :(");
+    return 1;
+  }
+  RCLCPP_INFO(node->get_logger(), "send goal call ok :)");
+
+  rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr
+    goal_handle = goal_handle_future.get();
+  if (!goal_handle) {
+    RCLCPP_ERROR(node->get_logger(), "Goal was rejected by server");
+    return 1;
+  }
+  RCLCPP_INFO(node->get_logger(), "Goal was accepted by server");
+
+  // Wait for the server to be done with the goal
+  auto result_future = action_client->async_get_result(goal_handle);
+  RCLCPP_INFO(node->get_logger(), "Waiting for result");
+  if (rclcpp::spin_until_future_complete(node, result_future) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    RCLCPP_ERROR(node->get_logger(), "get result call failed :(");
+    return 1;
+  }
   rclcpp::shutdown();
   return 0;
 }
