@@ -231,12 +231,12 @@
   <link name="panda_hand">
     <visual>
       <geometry>
-        <mesh filename="package://ur_configs/meshes/panda/meshes/visual/hand.dae"/>
+        <mesh filename="file:///home/ubb/Documents/PersonalProject/install/ur_configs/share/ur_configs/meshes/panda/meshes/visual/hand.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ur_configs/meshes/panda/meshes/collision/hand.stl"/>
+        <mesh filename="file:///home/ubb/Documents/PersonalProject/install/ur_configs/share/ur_configs/meshes/panda/meshes/collision/hand.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -248,12 +248,12 @@
   <link name="panda_leftfinger">
     <visual>
       <geometry>
-        <mesh filename="package://ur_configs/meshes/panda/meshes/visual/finger.dae"/>
+        <mesh filename="file:///home/ubb/Documents/PersonalProject/install/ur_configs/share/ur_configs/meshes/panda/meshes/visual/finger.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ur_configs/meshes/panda/meshes/collision/finger.stl"/>
+        <mesh filename="file:///home/ubb/Documents/PersonalProject/install/ur_configs/share/ur_configs/meshes/panda/meshes/collision/finger.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -266,13 +266,13 @@
     <visual>
       <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ur_configs/meshes/panda/meshes/visual/finger.dae"/>
+        <mesh filename="file:///home/ubb/Documents/PersonalProject/install/ur_configs/share/ur_configs/meshes/panda/meshes/visual/finger.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ur_configs/meshes/panda/meshes/collision/finger.stl"/>
+        <mesh filename="file:///home/ubb/Documents/PersonalProject/install/ur_configs/share/ur_configs/meshes/panda/meshes/collision/finger.stl"/>
       </geometry>
     </collision>
     <inertial>

@@ -30,7 +30,6 @@ class PandaNode(WebotsNode):
             10)
 
     def listener_callback(self, msg:JointState):
-        # TODO: Change to listen to join trajectory
         for idx, name in enumerate(msg.name):
             self.nodes[name].setPosition(msg.position[idx])
 
