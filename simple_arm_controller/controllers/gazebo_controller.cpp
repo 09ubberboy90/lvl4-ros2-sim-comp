@@ -105,12 +105,13 @@ int main(int argc, char * argv[])
   }
   std::cout << "Created action server" << std::endl;
 
-  std::vector<std::string> joint_names = {"shoulder_pan_joint"
-      ,"shoulder_lift_joint"
-      ,"elbow_joint"
-      ,"wrist_1_joint"
-      ,"wrist_2_joint"
-      ,"wrist_3_joint"};
+  std::vector<std::string> joint_names = {"panda_joint1",
+      "panda_joint2",
+      "panda_joint3",
+      "panda_joint4",
+      "panda_joint5",
+      "panda_joint6",
+      "panda_joint7"};
 
   std::vector<trajectory_msgs::msg::JointTrajectoryPoint> points;
   trajectory_msgs::msg::JointTrajectoryPoint point;

@@ -11,6 +11,16 @@ arm_controller:
         - panda_joint7
     state_publish_rate: 50
     action_monitor_rate: 50
+    constraints:
+        goal_time: 5
+        stopped_velocity_tolerance: 0.1
+        panda_joint1: {trajectory: 0.1, goal: 0.1}
+        panda_joint2: {trajectory: 0.1, goal: 0.1}
+        panda_joint3: {trajectory: 0.1, goal: 0.1}
+        panda_joint4: {trajectory: 0.1, goal: 0.1}
+        panda_joint5: {trajectory: 0.1, goal: 0.1}
+        panda_joint6: {trajectory: 0.1, goal: 0.1}
+        panda_joint7: {trajectory: 0.1, goal: 0.1}
 
 
 joint_state_controller:

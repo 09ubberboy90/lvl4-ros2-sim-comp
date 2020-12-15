@@ -104,17 +104,13 @@ int main(int argc, char** argv)
     node->get_node_graph_interface(),
     node->get_node_logging_interface(),
     node->get_node_waitables_interface(),
-    "/follow_joint_trajectory");
+    "/arm_controller/follow_joint_trajectory");
 
   bool response =
     action_client->wait_for_action_server(std::chrono::seconds(5));
   if (!response) {
     throw std::runtime_error("could not get action server");
   }
-
-
-
-
   
   rclcpp::NodeOptions node_options;
   node_options.automatically_declare_parameters_from_overrides(true);
