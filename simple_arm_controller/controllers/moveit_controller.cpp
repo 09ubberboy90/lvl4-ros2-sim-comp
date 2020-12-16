@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
     if (success)
     {
-        std::thread([&move_group]() { move_group.move(); }).detach();
+        std::thread([&move_group]() { move_group.asyncMove(); }).detach();
         server->execute_plan(my_plan.trajectory_.joint_trajectory);
     }
 
