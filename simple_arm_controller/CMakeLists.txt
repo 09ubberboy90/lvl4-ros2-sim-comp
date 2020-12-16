@@ -20,6 +20,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
+find_package(sim_action_server REQUIRED)
 
 install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
@@ -43,6 +44,7 @@ ament_target_dependencies(moveit_controller
   rclcpp_action
   control_msgs
   moveit_ros_planning_interface
+  sim_action_server
 )
 
 
@@ -57,5 +59,4 @@ endif()
 install(TARGETS gazebo_controller webots_controller moveit_controller
   DESTINATION lib/${PROJECT_NAME}
 )
-
 ament_package()

@@ -86,7 +86,7 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  node = std::make_shared<rclcpp::Node>("trajectory_test_node");
+  node = std::make_shared<rclcpp::Node>("trajectory_control");
 
   std::cout << "node created" << std::endl;
 
@@ -179,6 +179,5 @@ int main(int argc, char * argv[])
 
   std::cout << "async_send_goal" << std::endl;
   rclcpp::shutdown();
-
   return 0;
 }
