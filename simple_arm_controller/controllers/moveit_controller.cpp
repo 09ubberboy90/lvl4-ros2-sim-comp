@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 
     rclcpp::init(argc, argv);
 
-    auto server = std::make_shared<sim_action_server::ActionServer>();
+    auto server = std::make_shared<sim_action_server::ActionServer>("trajectory_control","/arm_controller/follow_joint_trajectory");
     std::vector<std::string> joint_names = {"panda_joint1",
                                             "panda_joint2",
                                             "panda_joint3",

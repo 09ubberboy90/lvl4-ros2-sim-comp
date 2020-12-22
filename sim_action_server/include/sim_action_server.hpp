@@ -17,7 +17,7 @@ class ActionServer : public rclcpp::Node
 {
 public:
 
-    ActionServer(std::string node_name = "trajectory_control");
+    ActionServer(std::string node_name = "trajectory_control", std::string action_node_name="/follow_joint_trajectory");
 
     bool execute_plan(trajectory_msgs::msg::JointTrajectory trajectory);
 

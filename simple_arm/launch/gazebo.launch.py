@@ -5,10 +5,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.events.lifecycle import ChangeState
-from launch.actions import EmitEvent
-import launch
-import lifecycle_msgs.msg
+from launch.actions import ExecuteProcess 
 
 from launch_ros.actions import Node
 
@@ -45,17 +42,11 @@ def generate_launch_description():
                         arguments=['-topic', 'robot_description',
                                    '-entity', 'panda'],
                         output='screen')
-    controller = Node(
-        package="simple_arm_control",
-        executable="moveit_controller",
-        parameters=[
-                {"action_node_name": "/arm_controller/follow_joint_trajectory"}
-            ]
 
-    )
+    lifecycle_pub = ExecuteProcess(cmd="ros2 lifecycle set /joint_state_controller deactivate")
     return LaunchDescription([
         gazebo,
         state,
         spawn_entity,
-        controller
+        lifecycle_pub
     ])
