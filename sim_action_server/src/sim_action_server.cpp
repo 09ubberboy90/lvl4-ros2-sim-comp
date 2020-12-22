@@ -2,22 +2,26 @@
 
 namespace sim_action_server
 {
-ActionServer::ActionServer(std::string node_name, std::string action_node_name)
+ActionServer::ActionServer(std::string node_name)
     : Node(node_name)
 {
+    this->declare_parameter<std::string>("action_node_name", "/follow_joint_trajectory");
     RCLCPP_INFO(this->get_logger(), "Node %s created", this->get_name());
+    std::string action_server_name;
+    this->get_parameter("action_node_name", action_server_name);
 
     action_client = rclcpp_action::create_client<control_msgs::action::FollowJointTrajectory>(
-        this->get_node_base_interface(),
-        this->get_node_graph_interface(),
-        this->get_node_logging_interface(),
-        this->get_node_waitables_interface(),
-        action_node_name);
+    this->get_node_base_interface(),
+    this->get_node_graph_interface(),
+    this->get_node_logging_interface(),
+    this->get_node_waitables_interface(),
+    action_server_name);
 
     bool response = action_client->wait_for_action_server(std::chrono::seconds(5));
     if (!response)
         throw std::runtime_error("could not get action server");
     RCLCPP_INFO(this->get_logger(), "Created action server");
+
 }
 
 bool ActionServer::execute_plan(trajectory_msgs::msg::JointTrajectory trajectory)

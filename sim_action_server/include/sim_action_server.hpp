@@ -17,7 +17,7 @@ class ActionServer : public rclcpp::Node
 {
 public:
 
-    ActionServer(std::string node_name = "trajectory_control", std::string action_node_name = "/follow_joint_trajectory");
+    ActionServer(std::string node_name = "trajectory_control");
 
     bool execute_plan(trajectory_msgs::msg::JointTrajectory trajectory);
 
@@ -27,7 +27,6 @@ private:
     bool common_goal_accepted = false;
     rclcpp_action::ResultCode common_resultcode = rclcpp_action::ResultCode::UNKNOWN;
     int common_action_result_code = control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL;
-
     void common_goal_response(
         std::shared_future<rclcpp_action::ClientGoalHandle
         <control_msgs::action::FollowJointTrajectory>::SharedPtr> future);
