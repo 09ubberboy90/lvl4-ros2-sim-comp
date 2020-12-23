@@ -10,6 +10,7 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 import xacro
 
+
 def generate_launch_description():
     pkg_name = "simple_arm"
     pkg_ros_ign_gazebo = get_package_share_directory('ros_ign_gazebo')
@@ -17,28 +18,16 @@ def generate_launch_description():
     config_name = "ur_configs"
     config_share = get_package_share_directory(config_name)
 
-    # Gazebo launch
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_ros_ign_gazebo, 'launch', 'ign_gazebo.launch.py'),
         ),
     )
 
-    # Spawn dolly
 
-    # # Follow node
-    # follow = Node(
-    #     package='dolly_follow',
-    #     executable='dolly_follow',
-    #     output='screen',
-    #     remappings=[
-    #         ('cmd_vel', '/dolly/cmd_vel'),
-    #         ('laser_scan', '/dolly/laser_scan')
-    #     ]
-    # )
     xacro_file = os.path.join(config_share,
-                              'urdf',
-                              'ur10_robot.urdf.xacro')
+                              'urdf','panda',
+                              'panda_arm_hand.urdf.xacro')
 
     urdf = xacro.process(xacro_file)
     params = {'robot_description': urdf}
@@ -65,16 +54,23 @@ def generate_launch_description():
     )
     spawn = Node(package='ros_ign_gazebo', executable='create',
                  arguments=[
-                    '-name', 'ur10',
-                    '-x', '0.0',
-                    '-z', '0',
-                    '-Y', '0',
-                    '-param', os.path.join(config_share, 'urdf','ur10.sdf')], ## TODO: Need to fix to use topic
+                     '-name', 'panda',
+                     '-x', '0.0',
+                     '-z', '0',
+                     '-Y', '0',
+                     '-file', "/home/ubb/Documents/PersonalProject/VrController/ur_configs/urdf/panda/panda_arm_hand.sdf"], 
                  output='screen')
 
-    joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+    joint_names = ["panda_joint1",
+                   "panda_joint2",
+                   "panda_joint3",
+                   "panda_joint4",
+                   "panda_joint5",
+                   "panda_joint6",
+                   "panda_joint7"]
     # args = [f"/model/ur10/joint/{name}/0/cmd_pos@std_msgs/msg/Float32@ignition.msgs.Float" for name in joint_names]
-    args = [f"/robot/{name}@std_msgs/msg/Float64@ignition.msgs.Double" for name in joint_names]
+    args = [
+        f"/robot/{name}@std_msgs/msg/Float64@ignition.msgs.Double" for name in joint_names]
     # Bridge
     bridge = Node(
         package='ros_ign_bridge',
@@ -93,16 +89,16 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-          'ign_args',
-          default_value=[os.path.join(pkg_share, 'worlds', 'empty.sdf')],
-          description='Ignition Gazebo arguments'),
+            'ign_args',
+            default_value=[os.path.join(pkg_share, 'worlds', 'empty.sdf')],
+            description='Ignition Gazebo arguments'),
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),
         gazebo,
         ign_pub,
         spawn,
-        joint, 
+        #joint,
         state,
         bridge,
-        #rviz
+        # rviz
     ])

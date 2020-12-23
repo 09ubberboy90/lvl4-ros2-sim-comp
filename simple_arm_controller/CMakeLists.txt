@@ -21,7 +21,7 @@ find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(sim_action_server REQUIRED)
-
+find_package(ignition-transport9 REQUIRED)
 install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
 )
@@ -46,6 +46,13 @@ ament_target_dependencies(moveit_controller
   moveit_ros_planning_interface
   sim_action_server
 )
+add_executable(ign_controller controllers/ign_controller.cpp)
+ament_target_dependencies(ign_controller
+  rclcpp
+  rclcpp_action
+  control_msgs
+  ignition-transport9
+)
 
 
 if(BUILD_TESTING)
@@ -56,7 +63,7 @@ if(BUILD_TESTING)
 endif()
 
 ## Install
-install(TARGETS gazebo_controller webots_controller moveit_controller
+install(TARGETS gazebo_controller webots_controller moveit_controller ign_controller
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()

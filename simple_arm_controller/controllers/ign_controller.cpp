@@ -41,7 +41,7 @@ void signal_handler(int _signal)
 
 void publish_joint_name(std::string joint_name,const ignition::msgs::Double &_msg)
 {
-  std::string topic = "/model/ur10/joint/"+joint_name+"/0/cmd_pos";
+  std::string topic = "/model/panda/joint/"+joint_name+"/0/cmd_pos";
   std::cout << "Msg: " << _msg.data() << std::endl << std::endl;
   if (!joint_pub[joint_name].Publish(_msg))
   {
@@ -50,40 +50,47 @@ void publish_joint_name(std::string joint_name,const ignition::msgs::Double &_ms
 }
 //////////////////////////////////////////////////
 /// \brief Function called each time a topic update is received.
-void shoulder_pan_cb(const ignition::msgs::Double &_msg)
+void panda_joint1(const ignition::msgs::Double &_msg)
 {
-  publish_joint_name("shoulder_pan_joint", _msg);
+  publish_joint_name("panda_joint1", _msg);
 }
 //////////////////////////////////////////////////
 /// \brief Function called each time a topic update is received.
-void shoulder_lift_cb(const ignition::msgs::Double &_msg)
+void panda_joint2(const ignition::msgs::Double &_msg)
 {
-  publish_joint_name("shoulder_lift_joint", _msg);
+  publish_joint_name("panda_joint2", _msg);
 }
 //////////////////////////////////////////////////
 /// \brief Function called each time a topic update is received.
-void elbow_cb(const ignition::msgs::Double &_msg)
+void panda_joint3(const ignition::msgs::Double &_msg)
 {
-  publish_joint_name("elbow_joint", _msg);
+  publish_joint_name("panda_joint3", _msg);
 }
 //////////////////////////////////////////////////
 /// \brief Function called each time a topic update is received.
-void wrist_1_cb(const ignition::msgs::Double &_msg)
+void panda_joint4(const ignition::msgs::Double &_msg)
 {
-  publish_joint_name("wrist_1_joint", _msg);
+  publish_joint_name("panda_joint4", _msg);
 }
 //////////////////////////////////////////////////
 /// \brief Function called each time a topic update is received.
-void wrist_2_cb(const ignition::msgs::Double &_msg)
+void panda_joint5(const ignition::msgs::Double &_msg)
 {
-  publish_joint_name("wrist_2_joint", _msg);
+  publish_joint_name("panda_joint5", _msg);
 }
 //////////////////////////////////////////////////
 /// \brief Function called each time a topic update is received.
-void wrist_3_cb(const ignition::msgs::Double &_msg)
+void panda_joint6(const ignition::msgs::Double &_msg)
 {
-  publish_joint_name("wrist_3_joint", _msg);
+  publish_joint_name("panda_joint6", _msg);
 }
+//////////////////////////////////////////////////
+/// \brief Function called each time a topic update is received.
+void panda_joint7(const ignition::msgs::Double &_msg)
+{
+  publish_joint_name("panda_joint7", _msg);
+}
+
 
 //////////////////////////////////////////////////
 /// \brief Function called each time a topic update is received.
@@ -102,21 +109,28 @@ int main(int argc, char **argv)
   std::signal(SIGTERM, signal_handler);
 
   func_map = {
-    {"shoulder_pan_joint",shoulder_pan_cb},
-    {"shoulder_lift_joint",shoulder_lift_cb},
-    {"elbow_joint",elbow_cb},
-    {"wrist_1_joint",wrist_1_cb},
-    {"wrist_2_joint",wrist_2_cb},
-    {"wrist_3_joint",wrist_3_cb},
+    {"panda_joint1",panda_joint1},
+    {"panda_joint2",panda_joint2},
+    {"panda_joint3",panda_joint3},
+    {"panda_joint4",panda_joint4},
+    {"panda_joint5",panda_joint5},
+    {"panda_joint6",panda_joint6},
+    {"panda_joint7",panda_joint7},
   };
-  std::vector<std::string> joint_name = {"shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"};
+  std::vector<std::string> joint_name = {"panda_joint1",
+                   "panda_joint2",
+                   "panda_joint3",
+                   "panda_joint4",
+                   "panda_joint5",
+                   "panda_joint6",
+                   "panda_joint7"};
   ignition::transport::Node node_list[joint_name.size()];
   for (int i=0; i<joint_name.size(); i++) 
   {  
 
     auto topic_name = joint_name[i];
     ignition::transport::Node pub;
-    std::string topic = "/model/ur10/joint/"+topic_name+"/0/cmd_pos";
+    std::string topic = "/model/panda/joint/"+topic_name+"/0/cmd_pos";
     joint_pub[topic_name] = pub.Advertise<ignition::msgs::Double>(topic);
 
     if (!node_list[0].Subscribe("/robot/"+topic_name,func_map[topic_name] ))
