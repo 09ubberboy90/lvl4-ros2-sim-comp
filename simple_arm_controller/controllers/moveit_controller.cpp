@@ -24,14 +24,6 @@ int main(int argc, char **argv)
 
     rclcpp::init(argc, argv);
 
-    auto server = std::make_shared<sim_action_server::ActionServer>("trajectory_control","/arm_controller/follow_joint_trajectory");
-    std::vector<std::string> joint_names = {"panda_joint1",
-                                            "panda_joint2",
-                                            "panda_joint3",
-                                            "panda_joint4",
-                                            "panda_joint5",
-                                            "panda_joint6",
-                                            "panda_joint7"};
 
     rclcpp::NodeOptions node_options;
     node_options.automatically_declare_parameters_from_overrides(true);
@@ -46,7 +38,21 @@ int main(int argc, char **argv)
     moveit::planning_interface::MoveGroupInterface move_group(move_group_node, PLANNING_GROUP);
 
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface(move_group_node->get_name());
-
+    
+    std::string action_node_name;
+    if (!move_group_node->get_parameter("action_node_name", action_node_name))
+    {
+        // In case the parameter was not created use default  
+        action_node_name = "/follow_joint_trajectory";
+    }
+    auto server = std::make_shared<sim_action_server::ActionServer>("trajectory_control",action_node_name);
+    std::vector<std::string> joint_names = {"panda_joint1",
+                                            "panda_joint2",
+                                            "panda_joint3",
+                                            "panda_joint4",
+                                            "panda_joint5",
+                                            "panda_joint6",
+                                            "panda_joint7"};
     // Planning to a Pose goal
     geometry_msgs::msg::Pose target_pose1;
     target_pose1.orientation.w = 1.0;

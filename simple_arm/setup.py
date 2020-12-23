@@ -4,7 +4,7 @@ package_name = 'simple_arm'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='0.1.0',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -24,6 +24,7 @@ setup(
         'console_scripts': [
             'vr_publish = simple_arm.vr_publish:main',
             'ign_publish = simple_arm.ign_publisher:main',
+            'gz_srv_disable = simple_arm.gz_srv_disable:main'
         ],
     },
 )

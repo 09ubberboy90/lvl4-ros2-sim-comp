@@ -43,7 +43,11 @@ def generate_launch_description():
                                    '-entity', 'panda'],
                         output='screen')
 
-    lifecycle_pub = ExecuteProcess(cmd="ros2 lifecycle set /joint_state_controller deactivate")
+    lifecycle_pub = Node(
+        package='simple_arm',
+        executable='gz_srv_disable',
+        output='screen',
+    )
     return LaunchDescription([
         gazebo,
         state,
