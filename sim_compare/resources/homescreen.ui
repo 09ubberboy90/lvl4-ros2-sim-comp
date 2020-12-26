@@ -29,9 +29,29 @@
     <normaloff>fpd_explorer/frontend/res/icon.png</normaloff>fpd_explorer/frontend/res/icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="0">
-     <widget class="CpuFreqGraph" name="widget" native="true"/>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QComboBox" name="process"/>
+    </item>
+    <item>
+     <widget class="CpuFreqGraph" name="widget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPlainTextEdit" name="proc_info">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -40,33 +60,33 @@
   <customwidget>
    <class>CpuFreqGraph</class>
    <extends>QWidget</extends>
-   <header>sim_compare.resource_monitor</header>
+   <header>resource_monitor</header>
    <container>1</container>
+   <slots>
+    <slot>changed_proc(QString)</slot>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>process</sender>
+   <signal>currentTextChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>changed_proc(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>21</x>
+     <y>27</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>3</x>
+     <y>74</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
-  <slot>load_files()</slot>
-  <slot>open_mib()</slot>
-  <slot>open_dm3()</slot>
-  <slot>start_dbrowser()</slot>
-  <slot>find_circular_centre()</slot>
-  <slot>clear_files()</slot>
-  <slot>change_color_mode()</slot>
-  <slot>remove_aperture()</slot>
-  <slot>centre_of_mass()</slot>
-  <slot>start_dpc_explorer()</slot>
-  <slot>open_hdf5()</slot>
-  <slot>open_npz()</slot>
-  <slot>ransac_im_fit()</slot>
-  <slot>start_vadf()</slot>
-  <slot>plot_vadf()</slot>
-  <slot>annular_slice_vadf()</slot>
-  <slot>eval_code()</slot>
-  <slot>find_matching_images()</slot>
-  <slot>disc_edge_sigma()</slot>
-  <slot>make_ref_im()</slot>
-  <slot>phase_correlation()</slot>
+  <slot>changed_proc(QString)</slot>
  </slots>
 </ui>

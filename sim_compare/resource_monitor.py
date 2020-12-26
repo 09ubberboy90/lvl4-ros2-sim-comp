@@ -84,3 +84,6 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
         self.ram_line.set_data(self.x_data, self.ram_data)
 
         return self.user_line, self.system_line,
+
+    def changed_proc(self, str):
+        print(str)
