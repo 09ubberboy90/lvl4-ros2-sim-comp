@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1072</width>
+    <height>710</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1072</width>
+    <height>710</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>11</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Grapher</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>fpd_explorer/frontend/res/icon.png</normaloff>fpd_explorer/frontend/res/icon.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <widget class="CpuFreqGraph" name="widget" native="true"/>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CpuFreqGraph</class>
+   <extends>QWidget</extends>
+   <header>sim_compare.resource_monitor</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>load_files()</slot>
+  <slot>open_mib()</slot>
+  <slot>open_dm3()</slot>
+  <slot>start_dbrowser()</slot>
+  <slot>find_circular_centre()</slot>
+  <slot>clear_files()</slot>
+  <slot>change_color_mode()</slot>
+  <slot>remove_aperture()</slot>
+  <slot>centre_of_mass()</slot>
+  <slot>start_dpc_explorer()</slot>
+  <slot>open_hdf5()</slot>
+  <slot>open_npz()</slot>
+  <slot>ransac_im_fit()</slot>
+  <slot>start_vadf()</slot>
+  <slot>plot_vadf()</slot>
+  <slot>annular_slice_vadf()</slot>
+  <slot>eval_code()</slot>
+  <slot>find_matching_images()</slot>
+  <slot>disc_edge_sigma()</slot>
+  <slot>make_ref_im()</slot>
+  <slot>phase_correlation()</slot>
+ </slots>
+</ui>
