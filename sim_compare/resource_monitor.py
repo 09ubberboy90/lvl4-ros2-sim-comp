@@ -15,6 +15,7 @@
 
 # You should have received a copy of the GNU General Public License
 # along with FPD-Explorer.  If not, see < https: // www.gnu.org / licenses / >.
+import pprint
 
 import numpy as np
 import psutil
@@ -22,68 +23,66 @@ from matplotlib.figure import Figure
 from matplotlib.animation import FuncAnimation
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
+import matplotlib.colors as mcolors
 
 class CpuFreqGraph(FigureCanvas, FuncAnimation):
     def __init__(self, parent=None):
         self._fig = Figure()
-        ax = self._fig.add_subplot(111)
+        self.ax1 = self._fig.add_subplot(211)
+        self.procs = []
+        self.ax2 = self._fig.add_subplot(212)
         FigureCanvas.__init__(self, self._fig)
         FuncAnimation.__init__(self, self._fig, self.animate, interval=100, blit=False)
         self.setParent(parent)
 
         # Needed to initialize the capture
         psutil.cpu_times_percent(interval=None)
-        self.ax = ax
         self.x_data = np.arange(0, 100)
-        self.user_data = np.zeros(100)
-        self.system_data = np.zeros(100)
-        self.ram_data = np.zeros(100)
+        self.cpu_data = np.zeros((0,100))
+        self.ram_data = np.zeros((0,100))
 
-        self.ax.set_xlim(0, 100)
-        self.ax.set_ylabel("Usage (%)")
-        self.ax.set_xlabel("Time")
+        for ax in [self.ax1, self.ax2]:
+            ax.set_xlim(0, 100)
+            ax.set_ylabel("Usage (%)")
+            ax.set_xlabel("Time")
+            ax.set_ylim(0, 100)
+            ax.get_xaxis().set_ticks([])
+            ax.spines['right'].set_color(None)
+            ax.spines['top'].set_color(None)
 
-        self.ax.set_ylim(0, 100)
-        self.ax.get_xaxis().set_ticks([])
-        self.ax.spines['right'].set_color(None)
-        self.ax.spines['top'].set_color(None)
+        self.ax1.set_title("CPU Usage")
+        self.ax2.set_title("Memory (RAM) Usage")
 
-        self.cpu_percent = psutil.cpu_times_percent(interval=None)
-        self.ram_percent = psutil.virtual_memory().percent
-
-        self.user_data[0] = self.cpu_percent.user
-        self.system_data[0] = self.cpu_percent.system
-        self.ram_data[0] = self.ram_percent
-
-        self.system_line, = self.ax.plot([], [], lw=2, label="System-CPU Usage", color='orange')
-        self.system_line.set_data(self.x_data, self.system_data)
-
-        self.user_line, = self.ax.plot([], [], label="User-CPU Usage", color=(17 / 256, 125 / 256, 187 / 256))
-        self.user_line.set_data(self.x_data, self.user_data)
-
-        self.ram_line, = self.ax.plot([], [], lw=2, label="Memory (RAM) Usage", color='purple')
-        self.ram_line.set_data(self.x_data, self.ram_data)
-
-        self.ax.legend(loc='upper left')
-
+        
     def animate(self, i):
 
-        self.user_data = np.roll(self.user_data, -1)
-        self.system_data = np.roll(self.system_data, -1)
+        self.cpu_data = np.roll(self.cpu_data, -1)
         self.ram_data = np.roll(self.ram_data, -1)
+        labels = []
+        for idx, p in enumerate(self.procs):
+            with p.oneshot():
+                self.cpu_data[idx+1][-1]= p.cpu_percent()
+                self.ram_data[idx+1][-1]= p.memory_percent()
+                labels.append(p.name())
+        cpu_stack = np.cumsum(self.cpu_data, axis=0)
+        ram_stack = np.cumsum(self.ram_data, axis=0)
+        self.ax1.collections.clear()
+        self.ax2.collections.clear()
+        for idx, (p, color) in enumerate(zip(self.procs, mcolors.TABLEAU_COLORS)):
+            self.ax1.fill_between(self.x_data, cpu_stack[idx,:], cpu_stack[idx+1,:], color = color, label=labels[idx])
+            self.ax2.fill_between(self.x_data, ram_stack[idx,:], ram_stack[idx+1,:], color = color, label=labels[idx])
+        self.ax1.legend(loc='upper left')
+        self.ax2.legend(loc='upper left')
 
-        self.cpu_percent = psutil.cpu_times_percent(interval=None)
-        self.ram_percent = psutil.virtual_memory().percent
 
-        self.user_data[-1] = self.cpu_percent.user
-        self.system_data[-1] = self.cpu_percent.system
-        self.ram_data[-1] = self.ram_percent
-
-        self.user_line.set_data(self.x_data, self.user_data)
-        self.system_line.set_data(self.x_data, self.system_data)
-        self.ram_line.set_data(self.x_data, self.ram_data)
-
-        return self.user_line, self.system_line,
-
-    def changed_proc(self, str):
-        print(str)
+    def update_proc(self, selected_proc, text_widget):
+        text = ""
+        for proc in selected_proc:
+            data = proc.as_dict(attrs=['num_ctx_switches', 'cpu_percent', 'cpu_times', 'name', 'num_threads', 'memory_percent','cmdline'])  
+            data["connections"] = len(proc.connections("inet"))
+            name = data.pop("name")
+            text += f"{name} : \n {pprint.pformat(data, indent=4).replace('{', '').replace('}', '')}\n"
+        text_widget.setPlainText(text)
+        self.procs = selected_proc
+        self.cpu_data = np.zeros((len(self.procs)+1,100))
+        self.ram_data = np.zeros((len(self.procs)+1,100))

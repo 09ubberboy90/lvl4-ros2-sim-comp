@@ -29,12 +29,45 @@
     <normaloff>fpd_explorer/frontend/res/icon.png</normaloff>fpd_explorer/frontend/res/icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QComboBox" name="process"/>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="1">
+     <widget class="QPushButton" name="button">
+      <property name="text">
+       <string>Confirm</string>
+      </property>
+     </widget>
     </item>
-    <item>
-     <widget class="CpuFreqGraph" name="widget" native="true">
+    <item row="0" column="0">
+     <widget class="CheckableComboBox" name="process">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="toolTip">
+       <string>Processes</string>
+      </property>
+      <property name="statusTip">
+       <string>Processes</string>
+      </property>
+      <property name="whatsThis">
+       <string>Processes</string>
+      </property>
+      <property name="currentText">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QPushButton" name="button2">
+      <property name="text">
+       <string>Update Proccess</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="3">
+     <widget class="CpuFreqGraph" name="graph" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -43,7 +76,7 @@
       </property>
      </widget>
     </item>
-    <item>
+    <item row="3" column="0" colspan="3">
      <widget class="QPlainTextEdit" name="proc_info">
       <property name="sizePolicy">
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
@@ -66,27 +99,65 @@
     <slot>changed_proc(QString)</slot>
    </slots>
   </customwidget>
+  <customwidget>
+   <class>CheckableComboBox</class>
+   <extends>QComboBox</extends>
+   <header>combo_box</header>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
   <connection>
-   <sender>process</sender>
-   <signal>currentTextChanged(QString)</signal>
+   <sender>button</sender>
+   <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changed_proc(QString)</slot>
+   <slot>change_proc()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>21</x>
+     <x>903</x>
+     <y>17</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1067</x>
+     <y>59</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>button2</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>update_proc_list()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1003</x>
      <y>27</y>
     </hint>
     <hint type="destinationlabel">
-     <x>3</x>
-     <y>74</y>
+     <x>1067</x>
+     <y>48</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>button2</sender>
+   <signal>pressed()</signal>
+   <receiver>process</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>930</x>
+     <y>21</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>740</x>
+     <y>21</y>
     </hint>
    </hints>
   </connection>
  </connections>
  <slots>
-  <slot>changed_proc(QString)</slot>
+  <slot>change_proc()</slot>
+  <slot>update_proc_list()</slot>
  </slots>
 </ui>

@@ -13,6 +13,7 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from resource_monitor import CpuFreqGraph
+from combo_box import CheckableComboBox
 
 
 class Ui_MainWindow(object):
@@ -29,42 +30,71 @@ class Ui_MainWindow(object):
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.verticalLayout = QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.process = QComboBox(self.centralwidget)
+        self.gridLayout = QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.button = QPushButton(self.centralwidget)
+        self.button.setObjectName(u"button")
+
+        self.gridLayout.addWidget(self.button, 0, 1, 1, 1)
+
+        self.process = CheckableComboBox(self.centralwidget)
         self.process.setObjectName(u"process")
-
-        self.verticalLayout.addWidget(self.process)
-
-        self.widget = CpuFreqGraph(self.centralwidget)
-        self.widget.setObjectName(u"widget")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
-        self.widget.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.process.sizePolicy().hasHeightForWidth())
+        self.process.setSizePolicy(sizePolicy)
 
-        self.verticalLayout.addWidget(self.widget)
+        self.gridLayout.addWidget(self.process, 0, 0, 1, 1)
+
+        self.button2 = QPushButton(self.centralwidget)
+        self.button2.setObjectName(u"button2")
+
+        self.gridLayout.addWidget(self.button2, 0, 2, 1, 1)
+
+        self.graph = CpuFreqGraph(self.centralwidget)
+        self.graph.setObjectName(u"graph")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.graph.sizePolicy().hasHeightForWidth())
+        self.graph.setSizePolicy(sizePolicy1)
+
+        self.gridLayout.addWidget(self.graph, 2, 0, 1, 3)
 
         self.proc_info = QPlainTextEdit(self.centralwidget)
         self.proc_info.setObjectName(u"proc_info")
-        sizePolicy1 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.proc_info.sizePolicy().hasHeightForWidth())
-        self.proc_info.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.proc_info.sizePolicy().hasHeightForWidth())
+        self.proc_info.setSizePolicy(sizePolicy2)
 
-        self.verticalLayout.addWidget(self.proc_info)
+        self.gridLayout.addWidget(self.proc_info, 3, 0, 1, 3)
 
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.process.currentTextChanged.connect(MainWindow.changed_proc)
+        self.button.clicked.connect(MainWindow.change_proc)
+        self.button2.clicked.connect(MainWindow.update_proc_list)
+        self.button2.pressed.connect(self.process.clear)
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Grapher", None))
+        self.button.setText(QCoreApplication.translate("MainWindow", u"Confirm", None))
+#if QT_CONFIG(tooltip)
+        self.process.setToolTip(QCoreApplication.translate("MainWindow", u"Processes", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(statustip)
+        self.process.setStatusTip(QCoreApplication.translate("MainWindow", u"Processes", None))
+#endif // QT_CONFIG(statustip)
+#if QT_CONFIG(whatsthis)
+        self.process.setWhatsThis(QCoreApplication.translate("MainWindow", u"Processes", None))
+#endif // QT_CONFIG(whatsthis)
+        self.process.setCurrentText("")
+        self.button2.setText(QCoreApplication.translate("MainWindow", u"Update Proccess", None))
     # retranslateUi
 
