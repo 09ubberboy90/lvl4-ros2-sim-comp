@@ -71,8 +71,10 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
         for idx, (p, color) in enumerate(zip(self.procs, mcolors.TABLEAU_COLORS)):
             self.ax1.fill_between(self.x_data, cpu_stack[idx,:], cpu_stack[idx+1,:], color = color, label=labels[idx])
             self.ax2.fill_between(self.x_data, ram_stack[idx,:], ram_stack[idx+1,:], color = color, label=labels[idx])
-        self.ax1.legend(loc='upper left')
-        self.ax2.legend(loc='upper left')
+
+        if self.procs:
+            self.ax1.legend(loc='upper left')
+            self.ax2.legend(loc='upper left')
 
 
     def update_proc(self, selected_proc, text_widget):
