@@ -81,6 +81,7 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
 
 
     def update_proc(self, selected_proc, text_widget):
+        # TODO: Figure out what to do if a process disapear
         text = ""
         for proc in selected_proc:
             try:

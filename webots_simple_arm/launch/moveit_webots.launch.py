@@ -44,6 +44,7 @@ def generate_launch_description():
                                output='screen',
                                parameters=[robot_description,
                                            robot_description_semantic,
-                                           kinematics_yaml])
+                                           kinematics_yaml,
+                                           {"action_node_name": "/follow_joint_trajectory"}])
 
     return LaunchDescription([run_move_group_demo])
