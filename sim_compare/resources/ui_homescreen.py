@@ -37,6 +37,11 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.button, 0, 1, 1, 1)
 
+        self.button2 = QPushButton(self.centralwidget)
+        self.button2.setObjectName(u"button2")
+
+        self.gridLayout.addWidget(self.button2, 0, 2, 1, 1)
+
         self.process = CheckableComboBox(self.centralwidget)
         self.process.setObjectName(u"process")
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -47,10 +52,10 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.process, 0, 0, 1, 1)
 
-        self.button2 = QPushButton(self.centralwidget)
-        self.button2.setObjectName(u"button2")
+        self.dump = QPushButton(self.centralwidget)
+        self.dump.setObjectName(u"dump")
 
-        self.gridLayout.addWidget(self.button2, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.dump, 0, 3, 1, 1)
 
         self.graph = CpuFreqGraph(self.centralwidget)
         self.graph.setObjectName(u"graph")
@@ -60,7 +65,7 @@ class Ui_MainWindow(object):
         sizePolicy1.setHeightForWidth(self.graph.sizePolicy().hasHeightForWidth())
         self.graph.setSizePolicy(sizePolicy1)
 
-        self.gridLayout.addWidget(self.graph, 2, 0, 1, 3)
+        self.gridLayout.addWidget(self.graph, 2, 0, 1, 4)
 
         self.proc_info = QPlainTextEdit(self.centralwidget)
         self.proc_info.setObjectName(u"proc_info")
@@ -70,7 +75,7 @@ class Ui_MainWindow(object):
         sizePolicy2.setHeightForWidth(self.proc_info.sizePolicy().hasHeightForWidth())
         self.proc_info.setSizePolicy(sizePolicy2)
 
-        self.gridLayout.addWidget(self.proc_info, 3, 0, 1, 3)
+        self.gridLayout.addWidget(self.proc_info, 3, 0, 1, 4)
 
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -78,6 +83,7 @@ class Ui_MainWindow(object):
         self.button.clicked.connect(MainWindow.change_proc)
         self.button2.clicked.connect(MainWindow.update_proc_list)
         self.button2.pressed.connect(self.process.clear)
+        self.dump.clicked.connect(MainWindow.dump_selected)
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
@@ -85,6 +91,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Grapher", None))
         self.button.setText(QCoreApplication.translate("MainWindow", u"Confirm", None))
+        self.button2.setText(QCoreApplication.translate("MainWindow", u"Update Proccess", None))
 #if QT_CONFIG(tooltip)
         self.process.setToolTip(QCoreApplication.translate("MainWindow", u"Processes", None))
 #endif // QT_CONFIG(tooltip)
@@ -95,6 +102,6 @@ class Ui_MainWindow(object):
         self.process.setWhatsThis(QCoreApplication.translate("MainWindow", u"Processes", None))
 #endif // QT_CONFIG(whatsthis)
         self.process.setCurrentText("")
-        self.button2.setText(QCoreApplication.translate("MainWindow", u"Update Proccess", None))
+        self.dump.setText(QCoreApplication.translate("MainWindow", u"Dump Selected", None))
     # retranslateUi
 

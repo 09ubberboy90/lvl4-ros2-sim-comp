@@ -4,7 +4,7 @@ import sys
 import psutil
 
 import matplotlib as plt
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtCore
 from PySide2.QtWidgets import QMainWindow
 
 from resources.ui_homescreen import Ui_MainWindow
@@ -14,12 +14,18 @@ class ApplicationWindow(QMainWindow):
     Create the main window and connect the menu bar slots.
     """
 
-    def __init__(self, app=None):
+    def __init__(self, app=None, allowed=None):
         super(ApplicationWindow, self).__init__()
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
-        self.procs = [(proc.name(), proc) for proc in psutil.process_iter()]
+        if allowed is not None:
+            self.procs = [(proc.name(), proc) for proc in psutil.process_iter() if proc.name() in allowed]
+        else:
+            self.procs = [(proc.name(), proc) for proc in psutil.process_iter()]
+
         self._ui.process.addItems(sorted(self.procs, key=lambda x: x[0]))
+        if allowed is not None:
+            self.update_select()
         self._ui.button.clicked.connect(self.change_proc)
 
     def change_proc(self):
@@ -29,14 +35,40 @@ class ApplicationWindow(QMainWindow):
     def update_proc_list(self):
         proc_id = [proc.pid for name, proc in self.procs]
         self.procs = [(proc.name(), proc) for proc in psutil.process_iter() if proc.pid not in proc_id]
-        print(self.procs)
         self._ui.process.addItems(sorted(self.procs, key=lambda x: x[0]))
 
+    def update_select(self):
+        model =self._ui.process.model()
+        for i in range(model.rowCount()):
+            model.item(i).setCheckState(QtCore.Qt.Checked)
+        self.change_proc()
+
+    def dump_selected(self):
+        for proc in self._ui.process.currentData():
+            print(proc.name())
+
+    def closeEvent(self, event):
+        self._ui.graph.dump_values()
+        event.accept()
 
 plt.use('Qt5Agg')
 
 if __name__ == "__main__":
     grapher = QtWidgets.QApplication()
-    window = ApplicationWindow(grapher)
+    allowed = [
+"fake_joint_driver_node",
+"gzclient",
+"gzserver",
+"mongod",
+"move_group",
+"python3",
+"robot_state_publisher",
+"ros2",
+"rviz2",
+"static_transform_publisher",
+]
+    window = ApplicationWindow(grapher, allowed=allowed)
     window.show()
     sys.exit(grapher.exec_())
+    print("called")
+    window.dump_selected()

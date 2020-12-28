@@ -70,16 +70,16 @@ void common_feedback(
   rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr,
   const std::shared_ptr<const control_msgs::action::FollowJointTrajectory::Feedback> feedback)
 {
-  std::cout << "feedback->desired.positions :";
-  for (auto & x : feedback->desired.positions) {
-    std::cout << x << "\t";
-  }
-  std::cout << std::endl;
-  std::cout << "feedback->desired.velocities :";
-  for (auto & x : feedback->desired.velocities) {
-    std::cout << x << "\t";
-  }
-  std::cout << std::endl;
+  // std::cout << "feedback->desired.positions :";
+  // for (auto & x : feedback->desired.positions) {
+  //   std::cout << x << "\t";
+  // }
+  // std::cout << std::endl;
+  // std::cout << "feedback->desired.velocities :";
+  // for (auto & x : feedback->desired.velocities) {
+  //   std::cout << x << "\t";
+  // }
+  // std::cout << std::endl;
 }
 
 int main(int argc, char * argv[])

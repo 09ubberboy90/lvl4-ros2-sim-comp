@@ -51,7 +51,7 @@ qtcreator-*
 # Catkin custom files
 CATKIN_IGNORE
 
-
+*.csv
 #Python
 
 **/__init__.py
