@@ -1,6 +1,5 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
-#include <moveit/moveit_cpp/planning_component.h>
 
 #include <moveit_msgs/msg/display_robot_state.hpp>
 #include <moveit_msgs/msg/display_trajectory.hpp>
@@ -32,12 +31,48 @@ public:
     }
     std::shared_ptr<sim_action_server::ActionServer> server;
     moveit::planning_interface::MoveGroupInterface *move_group;
+    moveit::planning_interface::PlanningSceneInterface *planning_scene_interface;
 
 private:
     void execute_goal(const geometry_msgs::msg::Pose::SharedPtr msg) const
     {
         RCLCPP_INFO(this->get_logger(), "I heard: '%f, %f, %f'", msg->position.x, msg->position.y, msg->position.z );
-        move_group->setPoseTarget(*msg);
+        geometry_msgs::msg::Pose target_pose1;
+        target_pose1.orientation.w = 1.0; // TODO:Rotation
+        target_pose1.position.x = msg->position.z;
+        target_pose1.position.y = msg->position.x;
+        target_pose1.position.z = msg->position.y - 0.5;
+        move_group->setPoseTarget(target_pose1);
+
+        // moveit_msgs::msg::CollisionObject collision_object;
+        // collision_object.header.frame_id = move_group->getPlanningFrame();
+
+        // // The id of the object is used to identify it.
+        // collision_object.id = "box1";
+
+        // // Define a box to add to the world.
+        // shape_msgs::msg::SolidPrimitive primitive;
+        // primitive.type = primitive.BOX;
+        // primitive.dimensions.resize(3);
+        // primitive.dimensions[0] = 0.1;
+        // primitive.dimensions[1] = 0.1;
+        // primitive.dimensions[2] = 0.1;
+
+        // // Define a pose for the box (specified relative to frame_id)
+        // geometry_msgs::msg::Pose box_pose;
+        // box_pose.orientation.w = 1.0;
+        // box_pose.position.x = msg->position.z;
+        // box_pose.position.y = msg->position.x;
+        // box_pose.position.z = msg->position.y;
+        
+        // collision_object.primitives.push_back(primitive);
+        // collision_object.primitive_poses.push_back(box_pose);
+        // collision_object.operation = collision_object.ADD;
+
+
+        // // Now, let's add the collision object into the world
+        // RCLCPP_INFO(this->get_logger(), "Add an object into the world");
+        // planning_scene_interface->applyCollisionObject(collision_object);
 
         // Now, we call the planner to compute the plan and visualize it.
         // Note that we are just planning, not asking move_group
@@ -72,6 +107,8 @@ int main(int argc, char **argv)
 
     moveit::planning_interface::MoveGroupInterface move_group(move_group_node, PLANNING_GROUP);
 
+    move_group.setPlanningTime(2);
+
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface(move_group_node->get_name());
 
     std::string action_node_name;
@@ -84,6 +121,8 @@ int main(int argc, char **argv)
     auto subscriber = std::make_shared<VrSubscriber>();
     subscriber->server = server;
     subscriber->move_group = &move_group;
+    subscriber->planning_scene_interface = &planning_scene_interface;
+
     rclcpp::spin(subscriber);
     rclcpp::shutdown();
     return 0;
