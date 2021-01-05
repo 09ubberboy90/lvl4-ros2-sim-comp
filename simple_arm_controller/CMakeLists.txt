@@ -46,6 +46,14 @@ ament_target_dependencies(moveit_controller
   moveit_ros_planning_interface
   sim_action_server
 )
+add_executable(vr_controller controllers/vr_controller.cpp)
+ament_target_dependencies(vr_controller
+  rclcpp
+  rclcpp_action
+  control_msgs
+  moveit_ros_planning_interface
+  sim_action_server
+)
 add_executable(ign_controller controllers/ign_controller.cpp)
 ament_target_dependencies(ign_controller
   rclcpp
@@ -63,7 +71,7 @@ if(BUILD_TESTING)
 endif()
 
 ## Install
-install(TARGETS gazebo_controller webots_controller moveit_controller ign_controller
+install(TARGETS gazebo_controller webots_controller moveit_controller ign_controller vr_controller
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()
