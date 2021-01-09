@@ -58,6 +58,17 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
         self.cpu_data = np.roll(self.cpu_data, -1, axis=1)
         self.ram_data = np.roll(self.ram_data, -1, axis=1)
         labels = []
+
+        # Remove processes that ended
+        self.procs_copy = list(self.procs)
+        for idx, p in enumerate(self.procs_copy):
+            with p.oneshot():
+                try:
+                    cpu_usage = p.cpu_percent()
+                except:
+                    del self.procs[idx]
+
+
         for idx, p in enumerate(self.procs):
             with p.oneshot():
                 cpu_usage = p.cpu_percent()
@@ -81,7 +92,6 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
 
 
     def update_proc(self, selected_proc, text_widget):
-        # TODO: Figure out what to do if a process disapear
         text = ""
         for proc in selected_proc:
             try:

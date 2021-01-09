@@ -8,16 +8,15 @@ from PySide2 import QtWidgets, QtCore
 from PySide2.QtWidgets import QMainWindow
 
 from resources.ui_homescreen import Ui_MainWindow
-# First Party
 
 
-class ApplicationWindow(QMainWindow):
+class ProcMonitorGui(QMainWindow):
     """
     Create the main window and connect the menu bar slots.
     """
 
     def __init__(self, app=None, allowed=None):
-        super(ApplicationWindow, self).__init__()
+        super(ProcMonitorGui, self).__init__()
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
         if allowed is not None:
@@ -87,8 +86,6 @@ if __name__ == "__main__":
         "webots_robotic_",
     ]
 
-    window = ApplicationWindow(grapher)
+    window = ProcMonitorGui(grapher)
     window.show()
     sys.exit(grapher.exec_())
-    print("called")
-    window.dump_selected()
