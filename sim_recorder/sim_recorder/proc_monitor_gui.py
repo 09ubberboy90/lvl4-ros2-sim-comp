@@ -2,12 +2,15 @@
 import sys
 
 import psutil
+import rclpy
 
 import matplotlib as plt
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtWidgets import QMainWindow
 
-from resources.ui_homescreen import Ui_MainWindow
+from .ui_homescreen import Ui_MainWindow
+
+from rclpy.node import Node
 
 
 class ProcMonitorGui(QMainWindow):
@@ -56,9 +59,11 @@ class ProcMonitorGui(QMainWindow):
         event.accept()
 
 
-plt.use('Qt5Agg')
 
-if __name__ == "__main__":
+def main(args=None):
+    plt.use('Qt5Agg')
+    rclpy.init(args=args)
+
     grapher = QtWidgets.QApplication()
     allowed_gazebo = [
         "fake_joint_driver_node",
@@ -89,3 +94,7 @@ if __name__ == "__main__":
     window = ProcMonitorGui(grapher)
     window.show()
     sys.exit(grapher.exec_())
+    rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()

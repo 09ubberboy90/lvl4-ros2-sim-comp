@@ -1,46 +1,57 @@
 # Standard Library
-import sys
-import time
+import sys, os
 import psutil
-import signal
 from collections import defaultdict
+import rclpy
 
 
+from rclpy.node import Node
+from ament_index_python.packages import get_package_share_directory
 
-class ProcMonitor():
+class ProcMonitor(Node):
     """
     Create the main window and connect the menu bar slots.
     """
 
     def __init__(self, allowed):
+        super().__init__('proccess_monitor')
         self.procs = [(proc.name(), proc)
                         for proc in psutil.process_iter() if proc.name() in allowed]
         self.cpu_dict = defaultdict(list)
         self.ram_dict = defaultdict(list)
+        self.timer = self.create_timer(0.5, self.animate)
+        self.package_share_directory = get_package_share_directory('sim_recorder')
 
 
+    def animate(self):
+        for idx, (name, p) in enumerate(self.procs):
+            try:
+                with p.oneshot():
+                    cpu_usage = p.cpu_percent()
+                    ram_usage = p.memory_info().rss / (1024*1024)
+                    self.cpu_dict[(name,p.pid)].append(cpu_usage)
+                    self.ram_dict[(name,p.pid)].append(ram_usage)
+            except:
+                pass
     
     def dump_values(self):
         print("Dumping")
-        with open("/home/ubb/Documents/PersonalProject/VrController/sim_compare/data/cpu_out.csv", "w") as f:
+        path = os.path.join(self.package_share_directory, "data")
+        with open(os.path.join(path, "cpu_out.csv"), "w") as f:
             print(self.cpu_dict)
             for (name,pid), el in self.cpu_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
-        with open("/home/ubb/Documents/PersonalProject/VrController/sim_compare/data/ram_out.csv", "w") as f:
+        with open(os.path.join(path , "ram_out.csv"), "w") as f:
             for (name,pid), el in self.ram_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
 
 
 
 
-def signal_handler(sig, frame):
-    print('You pressed Ctrl+C!')
-    monitor.dump_values()
-    sys.exit(0)
 
-if __name__ == "__main__":
+def main(args=None):
+    rclpy.init(args=args)
 
-    signal.signal(signal.SIGINT, signal_handler)
 
     allowed_gazebo = [
         "fake_joint_driver_node",
@@ -69,14 +80,11 @@ if __name__ == "__main__":
     ]
     monitor = ProcMonitor(allowed_webots)
 
-    while True: 
-        for idx, (name, p) in enumerate(monitor.procs):
-            try:
-                with p.oneshot():
-                    cpu_usage = p.cpu_percent()
-                    ram_usage = p.memory_info().rss / (1024*1024)
-                    monitor.cpu_dict[(name,p.pid)].append(cpu_usage)
-                    monitor.ram_dict[(name,p.pid)].append(ram_usage)
-            except:
-                print("exception")
-        time.sleep(1)
+    rclpy.spin(monitor)
+    monitor.dump_values()
+    monitor.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
