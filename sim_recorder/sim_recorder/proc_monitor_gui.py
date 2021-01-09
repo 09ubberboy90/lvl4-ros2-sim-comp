@@ -1,16 +1,14 @@
 # Standard Library
 import sys
 
+import matplotlib as plt
 import psutil
 import rclpy
-
-import matplotlib as plt
-from PySide2 import QtWidgets, QtCore
+from PySide2 import QtCore, QtWidgets
 from PySide2.QtWidgets import QMainWindow
+from rclpy.node import Node
 
 from .ui_homescreen import Ui_MainWindow
-
-from rclpy.node import Node
 
 
 class ProcMonitorGui(QMainWindow):
@@ -59,7 +57,6 @@ class ProcMonitorGui(QMainWindow):
         event.accept()
 
 
-
 def main(args=None):
     plt.use('Qt5Agg')
     rclpy.init(args=args)
@@ -95,6 +92,7 @@ def main(args=None):
     window.show()
     sys.exit(grapher.exec_())
     rclpy.shutdown()
+
 
 if __name__ == "__main__":
     main()
