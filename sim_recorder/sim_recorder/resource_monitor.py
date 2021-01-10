@@ -101,9 +101,9 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
 
     def dump_values(self):
         print("Dumping")
-        with open("/home/ubb/Documents/PersonalProject/VrController/sim_compare/data/cpu_out.csv", "w") as f:
+        with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu_out.csv", "w") as f:
             for key, el in self.cpu_dict.items():
                 f.write(f"{key},{','.join(str(v) for v in el)}\n")
-        with open("/home/ubb/Documents/PersonalProject/VrController/sim_compare/data/ram_out.csv", "w") as f:
+        with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/ram_out.csv", "w") as f:
             for key, el in self.ram_dict.items():
                 f.write(f"{key},{','.join(str(v) for v in el)}\n")

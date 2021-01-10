@@ -1,7 +1,7 @@
 import subprocess, time, os, sys, psutil
 from multiprocessing import Process, Pipe, Queue
 import signal
-
+import proc_monitor 
 def kill_proc_tree(data, including_parent=False):    
     for pid in data:
         try:
@@ -34,6 +34,7 @@ def run2(w, q):
 def run3(w, q):
     os.dup2(w.fileno(), 1)
     proc = subprocess.Popen("exec ros2 launch webots_simple_arm moveit_webots.launch.py", shell=True)
+    proc_monitor.main() # launch recording
     q.put(proc.pid)
     
 

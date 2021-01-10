@@ -10,6 +10,7 @@ from ament_index_python.packages import get_package_share_directory
 from rclpy.node import Node
 
 
+
 class ProcMonitor(Node):
     """
     Create the main window and connect the menu bar slots.
@@ -37,46 +38,51 @@ class ProcMonitor(Node):
                 pass
 
     def dump_values(self):
-        print("Dumping")
         path = os.path.join(self.package_share_directory, "data")
-        with open(os.path.join(path, "cpu_out.csv"), "w") as f:
+        with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu_out.csv", "w") as f:
             for (name, pid), el in self.cpu_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
-        with open(os.path.join(path, "ram_out.csv"), "w") as f:
+        with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/ram_out.csv", "w") as f:
             for (name, pid), el in self.ram_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
+        sys.exit(0)
 
+
+
+allowed_gazebo = [
+    "fake_joint_driver_node",
+    "gzclient",
+    "gzserver",
+    "mongod",
+    "move_group",
+    "python3",
+    "robot_state_publisher",
+    "ros2",
+    "rviz2",
+    "static_transform_publisher",
+]
+allowed_webots = [
+    "fake_joint_driver_node",
+    "mongod",
+    "move_group",
+    "python3",
+    "robot_state_publisher",
+    "ros2",
+    "rviz2",
+    "static_transform_publisher",
+    "webots",
+    "webots-bin",
+    "webots_robotic_",
+    "moveit_controller",
+]
 
 def main(args=None):
-
     rclpy.init(args=args)
 
-    allowed_gazebo = [
-        "fake_joint_driver_node",
-        "gzclient",
-        "gzserver",
-        "mongod",
-        "move_group",
-        "python3",
-        "robot_state_publisher",
-        "ros2",
-        "rviz2",
-        "static_transform_publisher",
-    ]
-    allowed_webots = [
-        "fake_joint_driver_node",
-        "mongod",
-        "move_group",
-        "python3",
-        "robot_state_publisher",
-        "ros2",
-        "rviz2",
-        "static_transform_publisher",
-        "webots",
-        "webots-bin",
-        "webots_robotic_",
-    ]
+ 
     monitor = ProcMonitor(allowed_webots)
+    signal.signal(signal.SIGINT, lambda sig, frame : monitor.dump_values())
+
 
     try:
         rclpy.spin(monitor)
@@ -85,7 +91,6 @@ def main(args=None):
     monitor.dump_values()
     rclpy.shutdown()
 
-
 if __name__ == '__main__':
-
     main()
+
