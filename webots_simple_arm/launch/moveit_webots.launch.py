@@ -40,7 +40,7 @@ def generate_launch_description():
     # MoveGroupInterface demo executable
     run_move_group_demo = Node(name='move_group',
                                package='simple_arm_control',
-                               executable='vr_controller',
+                               executable='moveit_controller',
                                output='screen',
                                parameters=[robot_description,
                                            robot_description_semantic,
