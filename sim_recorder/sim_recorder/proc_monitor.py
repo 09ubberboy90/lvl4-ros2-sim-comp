@@ -77,10 +77,11 @@ allowed_webots = [
     "moveit_controller",
 ]
 
-def main(args=None):
-    rclpy.init(args=args)
+def run(simulator="webots", args=None):
 
- 
+    rclpy.init(args=args)
+    simulator = allowed_webots if "webots" == simulator else allowed_gazebo
+
     monitor = ProcMonitor(allowed_webots)
     signal.signal(signal.SIGINT, lambda sig, frame : monitor.dump_values())
     signal.signal(signal.SIGTERM, lambda sig, frame : monitor.dump_values())
@@ -88,6 +89,10 @@ def main(args=None):
 
     rclpy.spin(monitor)
     rclpy.shutdown()
+
+
+def main(args=None):
+    run(args=args)
 
 if __name__ == '__main__':
     main()

@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'homescreen.ui'
+# Form generated from reading UI file 'homescreen.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+# Created by: Qt User Interface Compiler version 5.15.2
 ##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
+# WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from resource_monitor import CpuFreqGraph
-from combo_box import CheckableComboBox
+try:
+    from resource_monitor import CpuFreqGraph
+    from combo_box import CheckableComboBox
+except:
+    from .resource_monitor import CpuFreqGraph
+    from .combo_box import CheckableComboBox
 
 
 class Ui_MainWindow(object):
@@ -26,7 +30,8 @@ class Ui_MainWindow(object):
         font.setPointSize(11)
         MainWindow.setFont(font)
         icon = QIcon()
-        icon.addFile(u"fpd_explorer/frontend/res/icon.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u"fpd_explorer/frontend/res/icon.png",
+                     QSize(), QIcon.Normal, QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
@@ -47,7 +52,8 @@ class Ui_MainWindow(object):
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.graph.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.graph.sizePolicy().hasHeightForWidth())
         self.graph.setSizePolicy(sizePolicy)
 
         self.gridLayout.addWidget(self.graph, 2, 0, 1, 4)
@@ -57,7 +63,8 @@ class Ui_MainWindow(object):
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.process.sizePolicy().hasHeightForWidth())
+        sizePolicy1.setHeightForWidth(
+            self.process.sizePolicy().hasHeightForWidth())
         self.process.setSizePolicy(sizePolicy1)
 
         self.gridLayout.addWidget(self.process, 0, 0, 1, 1)
@@ -79,19 +86,25 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Grapher", None))
-        self.button.setText(QCoreApplication.translate("MainWindow", u"Confirm", None))
-        self.button2.setText(QCoreApplication.translate("MainWindow", u"Update Proccess", None))
-#if QT_CONFIG(tooltip)
-        self.process.setToolTip(QCoreApplication.translate("MainWindow", u"Processes", None))
+        MainWindow.setWindowTitle(
+            QCoreApplication.translate("MainWindow", u"Grapher", None))
+        self.button.setText(QCoreApplication.translate(
+            "MainWindow", u"Confirm", None))
+        self.button2.setText(QCoreApplication.translate(
+            "MainWindow", u"Update Proccess", None))
+# if QT_CONFIG(tooltip)
+        self.process.setToolTip(QCoreApplication.translate(
+            "MainWindow", u"Processes", None))
 #endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(statustip)
-        self.process.setStatusTip(QCoreApplication.translate("MainWindow", u"Processes", None))
+# if QT_CONFIG(statustip)
+        self.process.setStatusTip(QCoreApplication.translate(
+            "MainWindow", u"Processes", None))
 #endif // QT_CONFIG(statustip)
-#if QT_CONFIG(whatsthis)
-        self.process.setWhatsThis(QCoreApplication.translate("MainWindow", u"Processes", None))
+# if QT_CONFIG(whatsthis)
+        self.process.setWhatsThis(QCoreApplication.translate(
+            "MainWindow", u"Processes", None))
 #endif // QT_CONFIG(whatsthis)
         self.process.setCurrentText("")
-        self.dump.setText(QCoreApplication.translate("MainWindow", u"Dump Selected", None))
+        self.dump.setText(QCoreApplication.translate(
+            "MainWindow", u"Dump Selected", None))
     # retranslateUi
-

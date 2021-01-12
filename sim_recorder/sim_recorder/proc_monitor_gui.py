@@ -7,9 +7,10 @@ import rclpy
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtWidgets import QMainWindow
 from rclpy.node import Node
-
-from ui_homescreen import Ui_MainWindow
-
+try:
+    from ui_homescreen import Ui_MainWindow
+except ModuleNotFoundError:
+    from .ui_homescreen import Ui_MainWindow
 import signal
 class ProcMonitorGui(QMainWindow):
     """
@@ -86,18 +87,16 @@ def main(args=None):
     plt.use('Qt5Agg')
     rclpy.init(args=args)
 
-    grapher = QtWidgets.QApplication()
-
-    window = ProcMonitorGui(grapher,allowed_webots)
-    window.show()
-    sys.exit(grapher.exec_())
+    run()
     rclpy.shutdown()
 
-def direct_call(system):
-    system = allowed_webots if "webots" else allowed_gazebo
+
+
+def run(simulator="webots"):
+    simulator = allowed_webots if "webots" == simulator else allowed_gazebo
     grapher = QtWidgets.QApplication()
 
-    window = ProcMonitorGui(grapher, system)
+    window = ProcMonitorGui(grapher, simulator)
     signal.signal(signal.SIGTERM, lambda sig, frame : window.closeEvent)
     window.show()
     sys.exit(grapher.exec_())

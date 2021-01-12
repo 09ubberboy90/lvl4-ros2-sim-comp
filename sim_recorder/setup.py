@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             "proc_monitor = sim_recorder.proc_monitor:main",
-            "proc_monitor_gui = sim_recorder.proc_monitor_gui:main"
+            "proc_monitor_gui = sim_recorder.proc_monitor_gui:main",
+            "run_recording = sim_recorder.run_recording:main"
         ],
     },
 )

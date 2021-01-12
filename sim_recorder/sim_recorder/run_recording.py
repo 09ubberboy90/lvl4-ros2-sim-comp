@@ -1,15 +1,25 @@
-import subprocess, time, os, sys, psutil
+import subprocess
+import time
+import os
+import sys
+import psutil
 from multiprocessing import Process, Pipe, Queue, Event
 import signal
-import proc_monitor
-import proc_monitor_gui
+
+try:
+    import proc_monitor
+    import proc_monitor_gui
+except ModuleNotFoundError:
+    from . import proc_monitor
+    from . import proc_monitor_gui
+
 import threading
 import _thread
 
 
-def kill_proc_tree(data, procs, including_parent=False):
+def kill_proc_tree(pids, procs, including_parent=False):
     interrupt_event.set()
-    for pid in data:
+    for pid in pids:
         try:
             parent = psutil.Process(pid)
             for child in parent.children(recursive=True):
@@ -17,83 +27,99 @@ def kill_proc_tree(data, procs, including_parent=False):
             if including_parent:
                 parent.kill()
         except:
-            print("Unkown Pid : "+ str(pid))
-    for proc in procs:
+            print("Unkown Pid : " + str(pid))
+    for proc in procs[:-1]:
         proc.kill()
 
-
-def signal_handler(sig, frame):
-    print("signal")
-    kill_proc_tree(data, procs)
-    sys.exit(0)
-
-#signal.signal(signal.SIGINT, signal_handler)
-
-## Reference : https://stackoverflow.com/a/40281422
+# Reference : https://stackoverflow.com/a/40281422
 def interrupt_handler(interrupt_event):
     interrupt_event.wait()
     print("Interupting")
     _thread.interrupt_main()
 
 
-def run1(w, q):
+def run_com(w, q, com):
     os.dup2(w.fileno(), 1)
-    proc = subprocess.Popen("exec ros2 launch run_move_group run_move_group.launch.py", shell=True)
+    proc = subprocess.Popen("exec " + com, shell=True)
     q.put(proc.pid)
-    
-def run2(w, q):
-    os.dup2(w.fileno(), 1)
-    proc = subprocess.Popen("exec ros2 launch webots_simple_arm panda_trajectory.launch.py", shell=True)
-    q.put(proc.pid)
-    
-def run3(w, q):
-    os.dup2(w.fileno(), 1)
-    proc = subprocess.Popen("exec ros2 launch webots_simple_arm moveit_webots.launch.py", shell=True)
-    q.put(proc.pid)
-    
-def run4(q, interrupt_event, gui=False):
+
+
+def run_recorder(q, interrupt_event, simulator, gui=False):
     task = threading.Thread(target=interrupt_handler, args=(interrupt_event,))
     task.start()
+    simulator = "webots" if simulator == "webots" else "gazebo"
     try:
-            
         if gui:
-            proc_monitor_gui.direct_call("webots") # launch recording
+            proc_monitor_gui.run(simulator)  # launch recording
         else:
-            proc_monitor.main()
+            proc_monitor.run(simulator)
     except:
         q.put("Exit")
-        
-r, w = Pipe()
-q = Queue()
-reader = os.fdopen(r.fileno(), 'r')
-interrupt_event = Event()
-
-p1 = Process(target=run1, args=(w,q))
-p2 = Process(target=run2, args=(w,q))
-p3 = Process(target=run3, args=(w,q))
-p4 = Process(target=run4, args=(q, interrupt_event, True,), daemon=True)
-
-procs= [p1,p2,p3]
-data = []
-p1.start()
-time.sleep(5)
-p2.start()
-time.sleep(10)
-p3.start()
-p4.start()
-
-for proc in range(3):
-    data.append(q.get())
-
-with open("out.txt", "w") as f:
-    while True:
-        text = reader.readline()
-        f.write(text)
-        if "Plan and Execute request complete!" in text or "Goal Succeeded" in text:
-            print("Completed")
-            kill_proc_tree(data, procs)
-            if q.get() == "Exit":
-                sys.exit(0)
 
 
+def generate_procs(simulator, commands, r, w, q, interrupt_event):
+    procs = []
+    for com in commands:
+        procs.append(Process(target=run_com, args=(w, q, com)))
+    procs.append(Process(target=run_recorder, args=(
+        q, interrupt_event, simulator), daemon=True))
+    return procs
 
+
+def start_proces(delay, procs):
+    pids = []
+    delay.append(0)  # Otherwise out of range
+    for idx, p in enumerate(procs):
+        p.start()
+        time.sleep(delay[idx])
+
+    for proc in range(len(procs)-1):
+        pids.append(q.get())
+
+    return pids
+
+
+class Webots():
+    def __init__(self):
+        self.name = "webots"
+        self.commands = [
+            "ros2 launch run_move_group run_move_group.launch.py",
+            "ros2 launch webots_simple_arm panda_trajectory.launch.py",
+            "ros2 launch webots_simple_arm moveit_webots.launch.py",
+        ]
+        self.delays = [5, 7, 0]
+class Gazebo():
+    def __init__(self):
+        self.name = "gazebo"
+        self.commands = [
+            "ros2 launch run_move_group run_move_group.launch.py",
+            "ros2 launch webots_simple_arm panda_trajectory.launch.py",
+            "ros2 launch webots_simple_arm moveit_webots.launch.py",
+        ]
+        self.delays = [5, 10, 0]
+
+
+def main(args=None):
+    if len(sys.argv) == 1 or sys.argv[1] == "webots":
+        sim = Webots()
+    else:
+        sim = Gazebo()
+
+    r, w = Pipe()
+    q = Queue()
+    reader = os.fdopen(r.fileno(), 'r')
+    interrupt_event = Event()
+    procs = generate_procs(sim.name, sim.commands, r, w, q, interrupt_event)
+    pids = start_proces(sim.delays, procs)
+    with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/out.txt", "w") as f:
+        while True:
+            text = reader.readline()
+            f.write(text)
+            if "Plan and Execute request complete!" in text or "Goal Succeeded" in text:
+                print("Completed")
+                kill_proc_tree(pids, procs)
+                if q.get() == "Exit":
+                    sys.exit(0)
+
+if __name__ == "__main__":
+    main()
