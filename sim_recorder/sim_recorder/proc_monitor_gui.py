@@ -34,7 +34,7 @@ class ProcMonitorGui(QMainWindow):
 
     def change_proc(self):
         data = self._ui.process.currentData()
-        self._ui.graph.update_proc(data, self._ui.proc_info)
+        self._ui.graph.update_proc(data)
 
     def update_proc_list(self):
         proc_id = [proc.pid for name, proc in self.procs]
@@ -88,7 +88,7 @@ def main(args=None):
 
     grapher = QtWidgets.QApplication()
 
-    window = ProcMonitorGui(grapher)
+    window = ProcMonitorGui(grapher,allowed_webots)
     window.show()
     sys.exit(grapher.exec_())
     rclpy.shutdown()

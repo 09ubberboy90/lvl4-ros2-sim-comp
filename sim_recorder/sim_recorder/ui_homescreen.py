@@ -42,13 +42,23 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.button2, 0, 2, 1, 1)
 
-        self.process = CheckableComboBox(self.centralwidget)
-        self.process.setObjectName(u"process")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.graph = CpuFreqGraph(self.centralwidget)
+        self.graph.setObjectName(u"graph")
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.process.sizePolicy().hasHeightForWidth())
-        self.process.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.graph.sizePolicy().hasHeightForWidth())
+        self.graph.setSizePolicy(sizePolicy)
+
+        self.gridLayout.addWidget(self.graph, 2, 0, 1, 4)
+
+        self.process = CheckableComboBox(self.centralwidget)
+        self.process.setObjectName(u"process")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.process.sizePolicy().hasHeightForWidth())
+        self.process.setSizePolicy(sizePolicy1)
 
         self.gridLayout.addWidget(self.process, 0, 0, 1, 1)
 
@@ -56,26 +66,6 @@ class Ui_MainWindow(object):
         self.dump.setObjectName(u"dump")
 
         self.gridLayout.addWidget(self.dump, 0, 3, 1, 1)
-
-        self.graph = CpuFreqGraph(self.centralwidget)
-        self.graph.setObjectName(u"graph")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.graph.sizePolicy().hasHeightForWidth())
-        self.graph.setSizePolicy(sizePolicy1)
-
-        self.gridLayout.addWidget(self.graph, 2, 0, 1, 4)
-
-        self.proc_info = QPlainTextEdit(self.centralwidget)
-        self.proc_info.setObjectName(u"proc_info")
-        sizePolicy2 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.proc_info.sizePolicy().hasHeightForWidth())
-        self.proc_info.setSizePolicy(sizePolicy2)
-
-        self.gridLayout.addWidget(self.proc_info, 3, 0, 1, 4)
 
         MainWindow.setCentralWidget(self.centralwidget)
 

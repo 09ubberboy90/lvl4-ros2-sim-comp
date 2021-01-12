@@ -27,7 +27,11 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
         self.ram_data = np.zeros((0, 100))
         self.cpu_dict = defaultdict(list)
         self.ram_dict = defaultdict(list)
-
+        self.colors = {}
+        self.colors.update(mcolors.TABLEAU_COLORS)
+        self.colors.update(mcolors.BASE_COLORS)
+        self.colors.update(mcolors.CSS4_COLORS)
+        self.colors = list(self.colors.values())
         for ax in [self.ax1, self.ax2]:
             #ax.set_xlim(0, 100)
             ax.set_xlabel("Time")
@@ -66,32 +70,32 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
                 labels.append(p.name())
                 self.cpu_dict[(p.name(), p.pid)].append(cpu_usage)
                 self.ram_dict[(p.name(), p.pid)].append(ram_usage)
+                # print(f"{p.name()} : {cpu_usage} : {p.cmdline()}")
         cpu_stack = np.cumsum(self.cpu_data, axis=0)
         ram_stack = np.cumsum(self.ram_data, axis=0)
         self.ax1.collections.clear()
         self.ax2.collections.clear()
-        for idx, (p, color) in enumerate(zip(self.procs, mcolors.TABLEAU_COLORS)):
-            self.ax1.fill_between(
+        handle_cpu = []
+        handle_ram = []
+        for idx, (p, color) in enumerate(zip(self.procs, self.colors)):
+            cpu = self.ax1.fill_between(
                 self.x_data, cpu_stack[idx, :], cpu_stack[idx+1, :], color=color, label=labels[idx])
-            self.ax2.fill_between(
+            ram = self.ax2.fill_between(
                 self.x_data, ram_stack[idx, :], ram_stack[idx+1, :], color=color, label=labels[idx])
+            handle_cpu.append((cpu, cpu_stack[idx+1, -1] - ram_stack[idx, -1]))
+            handle_ram.append((ram, ram_stack[idx+1, -1] - ram_stack[idx, -1]))
 
         if self.procs:
-            self.ax1.legend(loc='upper left')
-            self.ax2.legend(loc='upper left')
+            handles, labels = self.ax1.get_legend_handles_labels()
+            handle_cpu.sort(key = lambda x: x[1], reverse=True)
+            handle_cpu = [x[0] for x in handle_cpu]
+            self.ax1.legend(handle_cpu, labels, loc='upper left')
+            handles, labels = self.ax2.get_legend_handles_labels()
+            handle_ram.sort(key = lambda x: x[1], reverse=True)
+            handle_ram = [x[0] for x in handle_ram]
+            self.ax2.legend(handle_ram, labels, loc='upper left')
 
-    def update_proc(self, selected_proc, text_widget):
-        text = ""
-        for proc in selected_proc:
-            try:
-                data = proc.as_dict(
-                    attrs=['num_ctx_switches', 'cpu_times', 'name', 'num_threads'])
-                data["connections"] = len(proc.connections("inet"))
-                name = data.pop("name")
-                text += f"{name} : \n {pprint.pformat(data, indent=4).replace('{', '').replace('}', '')}\n"
-            except psutil.AccessDenied:
-                pass
-        text_widget.setPlainText(text)
+    def update_proc(self, selected_proc):
         self.procs = selected_proc
 
         # Reset arrays
@@ -111,4 +115,3 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
         with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/ram_out.csv", "w") as f:
             for (name, pid), el in self.ram_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
-        sys.exit(0)
