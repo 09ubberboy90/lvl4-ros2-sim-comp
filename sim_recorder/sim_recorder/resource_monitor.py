@@ -8,7 +8,7 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.backends.backend_qt5agg import \
     FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-
+import sys, os
 
 class CpuFreqGraph(FigureCanvas, FuncAnimation):
     def __init__(self, parent=None):
@@ -50,11 +50,12 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
         # Remove processes that ended
         self.procs_copy = list(self.procs)
         for idx, p in enumerate(self.procs_copy):
-            with p.oneshot():
-                try:
-                    cpu_usage = p.cpu_percent()
-                except:
-                    del self.procs[idx]
+            try:
+                with p.oneshot():
+                    p.name()
+            except:
+                self.procs.remove(p)
+
 
         for idx, p in enumerate(self.procs):
             with p.oneshot():
@@ -63,8 +64,8 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
                 ram_usage = p.memory_info().rss / (1024*1024)
                 self.ram_data[idx+1][-1] = ram_usage
                 labels.append(p.name())
-                self.cpu_dict[p.name()].append(cpu_usage)
-                self.ram_dict[p.name()].append(ram_usage)
+                self.cpu_dict[(p.name(), p.pid)].append(cpu_usage)
+                self.ram_dict[(p.name(), p.pid)].append(ram_usage)
         cpu_stack = np.cumsum(self.cpu_data, axis=0)
         ram_stack = np.cumsum(self.ram_data, axis=0)
         self.ax1.collections.clear()
@@ -99,11 +100,15 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
         self.cpu_dict = defaultdict(list)
         self.ram_dict = defaultdict(list)
 
+        # Set cpu time
+        for p in self.procs:
+            p.cpu_percent() # <- Return a 0 that should be ignored
+
     def dump_values(self):
-        print("Dumping")
         with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu_out.csv", "w") as f:
-            for key, el in self.cpu_dict.items():
-                f.write(f"{key},{','.join(str(v) for v in el)}\n")
+            for (name, pid), el in self.cpu_dict.items():
+                f.write(f"{name},{','.join(str(v) for v in el)}\n")
         with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/ram_out.csv", "w") as f:
-            for key, el in self.ram_dict.items():
-                f.write(f"{key},{','.join(str(v) for v in el)}\n")
+            for (name, pid), el in self.ram_dict.items():
+                f.write(f"{name},{','.join(str(v) for v in el)}\n")
+        sys.exit(0)

@@ -8,9 +8,9 @@ from PySide2 import QtCore, QtWidgets
 from PySide2.QtWidgets import QMainWindow
 from rclpy.node import Node
 
-from .ui_homescreen import Ui_MainWindow
+from ui_homescreen import Ui_MainWindow
 
-
+import signal
 class ProcMonitorGui(QMainWindow):
     """
     Create the main window and connect the menu bar slots.
@@ -57,42 +57,50 @@ class ProcMonitorGui(QMainWindow):
         event.accept()
 
 
+allowed_gazebo = [
+    "fake_joint_driver_node",
+    "gzclient",
+    "gzserver",
+    "mongod",
+    "move_group",
+    "python3",
+    "robot_state_publisher",
+    "ros2",
+    "rviz2",
+    "static_transform_publisher",
+]
+allowed_webots = [
+    "fake_joint_driver_node",
+    "mongod",
+    "move_group",
+    "python3",
+    "robot_state_publisher",
+    "ros2",
+    "rviz2",
+    "static_transform_publisher",
+    "webots",
+    "webots-bin",
+    "webots_robotic_",
+]
 def main(args=None):
     plt.use('Qt5Agg')
     rclpy.init(args=args)
 
     grapher = QtWidgets.QApplication()
-    allowed_gazebo = [
-        "fake_joint_driver_node",
-        "gzclient",
-        "gzserver",
-        "mongod",
-        "move_group",
-        "python3",
-        "robot_state_publisher",
-        "ros2",
-        "rviz2",
-        "static_transform_publisher",
-    ]
-    allowed_webots = [
-        "fake_joint_driver_node",
-        "mongod",
-        "move_group",
-        "python3",
-        "robot_state_publisher",
-        "ros2",
-        "rviz2",
-        "static_transform_publisher",
-        "webots",
-        "webots-bin",
-        "webots_robotic_",
-    ]
 
     window = ProcMonitorGui(grapher)
     window.show()
     sys.exit(grapher.exec_())
     rclpy.shutdown()
 
+def direct_call(system):
+    system = allowed_webots if "webots" else allowed_gazebo
+    grapher = QtWidgets.QApplication()
+
+    window = ProcMonitorGui(grapher, system)
+    signal.signal(signal.SIGTERM, lambda sig, frame : window.closeEvent)
+    window.show()
+    sys.exit(grapher.exec_())
 
 if __name__ == "__main__":
     main()

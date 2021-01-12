@@ -22,7 +22,7 @@ class ProcMonitor(Node):
                       for proc in psutil.process_iter() if proc.name() in allowed]
         self.cpu_dict = defaultdict(list)
         self.ram_dict = defaultdict(list)
-        self.timer = self.create_timer(0.5, self.animate)
+        self.timer = self.create_timer(0.1, self.animate)
         self.package_share_directory = get_package_share_directory(
             'sim_recorder')
 
@@ -38,6 +38,7 @@ class ProcMonitor(Node):
                 pass
 
     def dump_values(self):
+        print("Dumping")
         path = os.path.join(self.package_share_directory, "data")
         with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu_out.csv", "w") as f:
             for (name, pid), el in self.cpu_dict.items():
@@ -82,13 +83,10 @@ def main(args=None):
  
     monitor = ProcMonitor(allowed_webots)
     signal.signal(signal.SIGINT, lambda sig, frame : monitor.dump_values())
+    signal.signal(signal.SIGTERM, lambda sig, frame : monitor.dump_values())
 
 
-    try:
-        rclpy.spin(monitor)
-    except KeyboardInterrupt:
-        pass
-    monitor.dump_values()
+    rclpy.spin(monitor)
     rclpy.shutdown()
 
 if __name__ == '__main__':

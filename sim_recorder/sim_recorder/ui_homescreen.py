@@ -12,8 +12,8 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from .resource_monitor import CpuFreqGraph
-from .combo_box import CheckableComboBox
+from resource_monitor import CpuFreqGraph
+from combo_box import CheckableComboBox
 
 
 class Ui_MainWindow(object):
