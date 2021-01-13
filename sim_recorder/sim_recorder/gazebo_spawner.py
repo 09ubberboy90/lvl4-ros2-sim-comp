@@ -9,6 +9,7 @@ import random
 import re
 import numpy as np
 
+
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import mat2quat
 
@@ -53,7 +54,36 @@ class BoundingBox(object):
         self.z = x if z is None and y is None else (y if z is None else z)
 
 
-class ObjectSpawner(object):
+class ServiceNode(Node):
+    def __init__(self, srv_type,srv_name):
+        super().__init__("service_caller")
+        self.cli = self.create_client(srv_type, srv_name)
+
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+        
+
+
+    def send_spawn(self, model_name,model_xml,robot_namespace,initial_pose,reference_frame):
+        self.req = SpawnModel.Request()
+        self.req.model_name = model_name
+        self.req.model_xml = model_xml
+        self.req.robot_namespace = robot_namespace
+        self.req.initial_pose = initial_pose
+        self.req.reference_frame = reference_frame
+
+        self.future = self.cli.call_async(self.req)
+
+    def send_delete(self, model_name):
+        self.req = DeleteModel.Request()
+        self.req.model_name = model_name
+
+        self.future = self.cli.call_async(self.req)
+
+
+
+
+class ObjectSpawner():
     """Provides convenient API for spawning any objects in the Gazebo model directory
     
     Attributes:
@@ -68,8 +98,9 @@ class ObjectSpawner(object):
     instances = {}
 
     def __init__(self, reference_frame="world", bounding_box=BoundingBox(0.04),
-                 model_name=None, model_directory=None,
+                 model_name="obj_spawn", model_directory=None,
                  verbose=1):
+        
         self.reference_frame = reference_frame
         self.bounding_box = bounding_box
 
@@ -92,6 +123,32 @@ class ObjectSpawner(object):
 
         self.verbose = verbose
 
+    def call_service(self, srv_type, srv_name, model_name,model_xml=None,robot_namespace=None,initial_pose=None,reference_frame=None):
+        rclpy.init()
+
+        service_node = ServiceNode(srv_type,srv_name)
+        if srv_type == SpawnModel:
+            service_node.send_spawn(model_name, model_xml,robot_namespace,initial_pose,reference_frame)
+        else:
+            service_node.send_delete(model_name)
+
+        rclpy.spin_once(service_node)
+        if service_node.future.done():
+            try:
+                response = service_node.future.result()
+            except Exception as e:
+                service_node.get_logger().info(
+                    'Service call failed %r' % (e,))
+            else:
+                service_node.get_logger().info("Successfully executed service")
+                service_node.get_logger().info(
+                    'Result of service: '+response.status_message)
+
+
+        service_node.destroy_node()
+        rclpy.shutdown()
+
+
     def spawn_model(self, pose):
         """Spawns a model at the target pose (position and orientation).
         
@@ -105,25 +162,16 @@ class ObjectSpawner(object):
         if self.verbose >= 3:
             print(">> Loaded Model {} <<<\n{}".format(self.model_name, xml))
 
-        rospy.wait_for_service('/gazebo/spawn_sdf_model')
-        try:
-            spawn_sdf = rospy.ServiceProxy('/gazebo/spawn_sdf_model',
-                                           SpawnModel)
-
-            # Enforce unique names
-            if len(self.instances) == 0:
-                name = self.model_name
-            else:
-                "{}_{}".format(self.model_name, len(self.instances))
-
-            spawn_sdf(name, xml.replace("\n", ""),
+        # Enforce unique names
+        if len(self.instances) == 0:
+            name = self.model_name
+        else:
+            name = "{}_{}".format(self.model_name, len(self.instances))
+        self.call_service(SpawnModel, '/gazebo/spawn_sdf_model', model_name,name, xml.replace("\n", ""),
                       "/", pose, self.reference_frame)
 
-            self.instances[name] = pose
-            return name, pose
-        except rospy.ServiceException, e:
-            rospy.logerr("Spawn {} failed: {}".format(self.model_name, e))
-            return None
+        self.instances[name] = pose
+        return name, pose
 
     def _choose_model(self):
         """Interactively select model by traversing Gazebo model subdirectories
@@ -156,7 +204,7 @@ class ObjectSpawner(object):
         # Ask user to pick directory by number
         def select_by_number(options, option_desc):
             while True:
-                resp = raw_input("Type no of desired {}".format(option_desc))
+                resp = input("Type no of desired {}".format(option_desc))
                 if re.match("\d+", resp):
                     if int(resp) in options.keys():
                         return options[int(resp)]  # Selected option
@@ -196,13 +244,13 @@ class ObjectSpawner(object):
         x = random.uniform(table_offset.x, table_offset.x + table_bbox.x)  # Default: 0.38->0.7
         y = random.uniform(table_offset.y, table_offset.y + table_bbox.y)  # Default: -0.1->0.4)
         z = table_offset.z + table_bbox.z  # Default: 0.7825
-        fixed_rotations = numpy.arange(0, 2*numpy.pi, numpy.pi/2)
+        fixed_rotations = np.arange(0, 2*np.pi, np.pi/2)
         if random_face:
             roll, pitch, yaw = random.choice(fixed_rotations), \
                                random.choice(fixed_rotations), \
-                               random.uniform(0, 2*numpy.pi)
+                               random.uniform(0, 2*np.pi)
         else:
-            roll, pitch, yaw = numpy.pi, 0, random.uniform(0, 2*numpy.pi)
+            roll, pitch, yaw = np.pi, 0, random.uniform(0, 2*np.pi)
 
         q = get_rpy_quaternion(roll, pitch, yaw)
 
@@ -225,20 +273,15 @@ class ObjectSpawner(object):
                 print("Spawned {} at (x={},y={},z={})".format(self.model_name,
                                                               x, y, z))
 
-        return name if name is not None else "EMPTY", (numpy.pi, 0, yaw), pose
+        return name if name is not None else "EMPTY", (np.pi, 0, yaw), pose
 
     def delete_models(self, instance_name=None):
         """Use class-wide instances attribute to delete models. 
         instance_name: if specified, deletes specific model [default: None]"""
-        try:
-            delete_model = rospy.ServiceProxy("/gazebo/delete_model",
-                                              DeleteModel)
-            if instance_name is None:
-                for instance_name in self.instances.keys():
-                    delete_model(instance_name)
-                    del self.instances[instance_name]
-            elif instance_name in self.instances:
-                delete_model(instance_name)
+        if instance_name is None:
+            for instance_name in self.instances.keys():
+                self.call_service(DeleteModel, '/gazebo/delete_model', instance_name)
                 del self.instances[instance_name]
-        except rospy.ServiceException as e:
-            rospy.loginfo("Delete Model failed: {}\n{}".format(e, instances))
+        elif instance_name in self.instances:
+            self.call_service(DeleteModel, '/gazebo/delete_model', instance_name)
+            del self.instances[instance_name]
