@@ -23,6 +23,7 @@ setup(
             "proc_monitor = sim_recorder.proc_monitor:main",
             "proc_monitor_gui = sim_recorder.proc_monitor_gui:main",
             "webots_spawner = sim_recorder.webots_spawner:main",
+            "gazebo_spawner = sim_recorder.gazebo_spawner:main",
             "run_recording = sim_recorder.run_recording:main"
         ],
     },

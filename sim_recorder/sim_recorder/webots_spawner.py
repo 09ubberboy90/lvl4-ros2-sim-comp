@@ -25,13 +25,9 @@ class SpawnerNode(WebotsNode):
 def main(args=None):
     rclpy.init(args=args)
 
-    panda_controller = SpawnerNode(args=args)
-    panda_controller.start_device_manager()
+    spawner = SpawnerNode(args=args)
 
-    # Use a MultiThreadedExecutor to enable processing goals concurrently
-    executor = rclpy.executors.MultiThreadedExecutor()
-
-    rclpy.spin(panda_controller, executor=executor)
+    rclpy.spin_once(spawner)
     rclpy.shutdown()
 
 if __name__ == '__main__':

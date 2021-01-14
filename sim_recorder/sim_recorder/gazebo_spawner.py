@@ -1,53 +1,61 @@
 # Adapted from Xavier Weiss' code at: https://github.com/DEUCE1957/Automatic-Waste-Sorting
 
-import os, sys, shutil
+import moveit_msgs
+import geometry_msgs
+import gazebo_msgs
+import std_msgs
+from std_msgs.msg import String
+from gazebo_msgs.srv import DeleteEntity, SpawnEntity, GetModelState, GetWorldProperties
+from gazebo_msgs.msg import LinkStates
+from geometry_msgs.msg import Pose, Point, Quaternion
+from transforms3d.quaternions import mat2quat
+from transforms3d.euler import euler2mat
+import os
+import sys
+import shutil
 from os import path
 import glob
 import rclpy
-from rclpy import Node
+from rclpy.node import Node
 import random
 import re
 import numpy as np
 
-
-from transforms3d.euler import euler2mat
-from transforms3d.quaternions import mat2quat
-
-import std_msgs,gazebo_msgs,geometry_msgs,moveit_msgs
-from geometry_msgs.msg import Pose, Point, Quaternion
-from gazebo_msgs.msg import LinkStates
-from gazebo_msgs.srv import DeleteModel, SpawnModel, GetModelState, GetWorldProperties
-from std_msgs.msg import String
-
 # >>> Utilities <<<
-def define_pose(x,y,z,**kwargs):
+
+
+def define_pose(x, y, z, **kwargs):
     """Returns a Pose based on x,y,z and optionally o_x,o_y,o_z and o_w"""
     pose_target = geometry_msgs.msg.Pose()
     pose_target.position.x = x
     pose_target.position.y = y
     pose_target.position.z = z
 
-    pose_target.orientation.x = kwargs.get("o_x",0.0)
-    pose_target.orientation.y = kwargs.get("o_y",1.0)
-    pose_target.orientation.z = kwargs.get("o_z",0.0)
-    pose_target.orientation.w = kwargs.get("o_w",0.0)
+    pose_target.orientation.x = kwargs.get("o_x", 0.0)
+    pose_target.orientation.y = kwargs.get("o_y", 1.0)
+    pose_target.orientation.z = kwargs.get("o_z", 0.0)
+    pose_target.orientation.w = kwargs.get("o_w", 0.0)
     return pose_target
 
-def get_rpy_quaternion(roll,pitch,yaw):
+
+def get_rpy_quaternion(roll, pitch, yaw):
     """Converts human readable roll (about x-axis), pitch (about y-axis)
     and yaw (about z-axis) format to a 4D quaternion"""
     return mat2quat(euler2mat(roll, pitch, yaw, 'sxyz'))
 
-def isclose(a,b,rel_tol=1e-9,abs_tol=0.0):
+
+def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
     """Returns whether 2 floats are equal with a relative and absolute 
     tolerance to prevent problems from floating point precision"""
-    return abs(a-b) <= max( rel_tol * max(abs(a), abs(b)), abs_tol )
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
 
 class BoundingBox(object):
     """Defines a cuboid volume to represent an object's bounding volume
     If only x is supplied, constructs a x*x*x cube
     If y is also supplied, constructs a x*y*x cuboid
     If y and z are supplied, constructs a x*y*z cuboid"""
+
     def __init__(self, x, y=None, z=None):  # x,y,z
         self.x = x
         self.y = x if y is None else y
@@ -55,19 +63,18 @@ class BoundingBox(object):
 
 
 class ServiceNode(Node):
-    def __init__(self, srv_type,srv_name):
+    def __init__(self, srv_type, srv_name):
         super().__init__("service_caller")
         self.cli = self.create_client(srv_type, srv_name)
+        self.get_logger().info(f"Service created {srv_type} {srv_name}")
 
-        while not self.cli.wait_for_service(timeout_sec=1.0):
+        while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('service not available, waiting again...')
-        
 
-
-    def send_spawn(self, model_name,model_xml,robot_namespace,initial_pose,reference_frame):
-        self.req = SpawnModel.Request()
-        self.req.model_name = model_name
-        self.req.model_xml = model_xml
+    def send_spawn(self, model_name, model_xml, robot_namespace, initial_pose, reference_frame):
+        self.req = SpawnEntity.Request()
+        self.req.name = model_name
+        self.req.xml = model_xml
         self.req.robot_namespace = robot_namespace
         self.req.initial_pose = initial_pose
         self.req.reference_frame = reference_frame
@@ -75,17 +82,15 @@ class ServiceNode(Node):
         self.future = self.cli.call_async(self.req)
 
     def send_delete(self, model_name):
-        self.req = DeleteModel.Request()
-        self.req.model_name = model_name
+        self.req = DeleteEntity.Request()
+        self.req.name = model_name
 
         self.future = self.cli.call_async(self.req)
 
 
-
-
-class ObjectSpawner():
+class ObjectSpawner(object):
     """Provides convenient API for spawning any objects in the Gazebo model directory
-    
+
     Attributes:
         -- Provided at initalization --
         reference_frame: coordinates are used relative to ref frame [default: 'world']
@@ -93,22 +98,28 @@ class ObjectSpawner():
         model_name: if not provided, interactively choose model [default: None]
         model_directory: if not provided, use default directory [default: None]
         verbose: How much daignostic info to print [default: 1]
-        -- Generated --
-        nested_dir: Gazebo models can only be used if placed at root of Gazebo model directory"""
-    instances = {}
+    """
 
     def __init__(self, reference_frame="world", bounding_box=BoundingBox(0.04),
                  model_name="obj_spawn", model_directory=None,
                  verbose=1):
-        
+
+        self.instances = {}
         self.reference_frame = reference_frame
         self.bounding_box = bounding_box
 
-        self.default_dir = path.join(os.getcwd(), "workspace", "src",
-                                     "baxter_simulator",
-                                     "baxter_sim_examples", "models")
+        self.database = False
+        
         if model_directory is None:
-            self.model_dir = self.default_dir
+            self.model_dir = """\
+                            <sdf version="1.6">
+                                <world name="default">
+                                    <include>
+                                        <uri>model://{}</uri>
+                                    </include>
+                                </world>
+                            </sdf>""".format(model_name)
+            self.database = True
         else:
             self.model_dir = model_directory
 
@@ -117,17 +128,13 @@ class ObjectSpawner():
         else:
             self.model_name = model_name
 
-        # True if model is found in root model_path
-        if not hasattr(self, "nested_dir"):
-            self.nested_dir = self.model_dir
 
         self.verbose = verbose
 
-    def call_service(self, srv_type, srv_name, model_name,model_xml=None,robot_namespace=None,initial_pose=None,reference_frame=None):
-        rclpy.init()
+    def call_service(self, srv_type, srv_name, model_name, model_xml=None, robot_namespace=None, initial_pose=None, reference_frame=None):
 
         service_node = ServiceNode(srv_type,srv_name)
-        if srv_type == SpawnModel:
+        if srv_type == SpawnEntity:
             service_node.send_spawn(model_name, model_xml,robot_namespace,initial_pose,reference_frame)
         else:
             service_node.send_delete(model_name)
@@ -146,18 +153,19 @@ class ObjectSpawner():
 
 
         service_node.destroy_node()
-        rclpy.shutdown()
 
 
     def spawn_model(self, pose):
         """Spawns a model at the target pose (position and orientation).
-        
+
         If Spawning service failed: Returns None
         Else: Returns name of generated object and its real pose"""
-        
-        model_path = path.join(self.nested_dir, self.model_name, "model.sdf")
-        with open(model_path, "r") as f:
-            xml = f.read()
+        if self.database:
+            xml = self.model_dir
+        else:     
+            model_path = path.join(self.model_dir, self.model_name, "model.sdf")
+            with open(model_path, "r") as f:
+                xml = f.read()
 
         if self.verbose >= 3:
             print(">> Loaded Model {} <<<\n{}".format(self.model_name, xml))
@@ -167,8 +175,8 @@ class ObjectSpawner():
             name = self.model_name
         else:
             name = "{}_{}".format(self.model_name, len(self.instances))
-        self.call_service(SpawnModel, '/gazebo/spawn_sdf_model', model_name,name, xml.replace("\n", ""),
-                      "/", pose, self.reference_frame)
+        self.call_service(SpawnEntity, '/spawn_entity', name, xml.replace("\n", ""),
+                          "/", pose, self.reference_frame)
 
         self.instances[name] = pose
         return name, pose
@@ -196,43 +204,17 @@ class ObjectSpawner():
                 if child_dirs in [[], ['meshes'], ['materials', 'meshes']]:
                     continue
                 else:
-                    if verbose: print("{}: {}".format(count, dir_name))
+                    if verbose:
+                        print("{}: {}".format(count, dir_name))
                     valid_dirs[count] = dir_name
                     count += 1
             return valid_dirs
 
-        # Ask user to pick directory by number
-        def select_by_number(options, option_desc):
-            while True:
-                resp = input("Type no of desired {}".format(option_desc))
-                if re.match("\d+", resp):
-                    if int(resp) in options.keys():
-                        return options[int(resp)]  # Selected option
-                print("Please pick desired {} by number".format(option_desc))
-
-        if self.model_dir != self.default_dir:
-            valid_folders = get_listdir(self.model_dir)
-            category = select_by_number(valid_folders, "Category")
-            self.nested_dir = path.join(self.model_dir, category)
-            valid_models = os.listdir(self.nested_dir)
-        else:  # Default Directory does not have categories
-            valid_models = os.listdir(self.model_dir)
-
-        # Final Choice: One Specific Model
-        valid_models = dict(enumerate(valid_models, start=0))
-        for key, value in valid_models.items():
-            print("{}: {}".format(key, value))
-        model_name = select_by_number(valid_models, "Model")
-
-        if self.verbose >= 1: print("You selected: {}".format(model_name))
-
-        return model_name
-
     def spawn_on_table(self, spawn=True, random_face=True,
-                       table_bbox = BoundingBox(0.32, 0.5, 0.7825),
-                       table_offset = Point(0.38, -0.1, 0.0)):
+                       table_bbox=BoundingBox(0.32, 0.5, 0.7825),
+                       table_offset=Point(x=0.38, y=-0.1, z=0.0)):
         """Spawns an object on a table's surface with random location and yaw. 
-        
+
         Attributes:
             spawn: Whether to actually spawn the object [default:True]
             random_face: Whether to vary which face is front-facing (24 possibilities) [default: True]
@@ -241,14 +223,16 @@ class ObjectSpawner():
         Returns:
             Unique name in simulation, overhead RPY and real pose
         """
-        x = random.uniform(table_offset.x, table_offset.x + table_bbox.x)  # Default: 0.38->0.7
-        y = random.uniform(table_offset.y, table_offset.y + table_bbox.y)  # Default: -0.1->0.4)
+        x = random.uniform(table_offset.x, table_offset.x +
+                           table_bbox.x)  # Default: 0.38->0.7
+        y = random.uniform(table_offset.y, table_offset.y +
+                           table_bbox.y)  # Default: -0.1->0.4)
         z = table_offset.z + table_bbox.z  # Default: 0.7825
         fixed_rotations = np.arange(0, 2*np.pi, np.pi/2)
         if random_face:
             roll, pitch, yaw = random.choice(fixed_rotations), \
-                               random.choice(fixed_rotations), \
-                               random.uniform(0, 2*np.pi)
+                random.choice(fixed_rotations), \
+                random.uniform(0, 2*np.pi)
         else:
             roll, pitch, yaw = np.pi, 0, random.uniform(0, 2*np.pi)
 
@@ -266,7 +250,7 @@ class ObjectSpawner():
             # Make model available at top level of Model directory
             root_model_dir = path.join(self.model_dir, self.model_name)
             if not path.exists(root_model_dir):
-                nested_model_dir = path.join(self.nested_dir, self.model_name)
+                nested_model_dir = path.join(self.nested_dir, self.model_name) # FIXME: nested dir removed
                 shutil.copytree(nested_model_dir, root_model_dir)
 
             if self.verbose >= 2:
@@ -280,8 +264,24 @@ class ObjectSpawner():
         instance_name: if specified, deletes specific model [default: None]"""
         if instance_name is None:
             for instance_name in self.instances.keys():
-                self.call_service(DeleteModel, '/gazebo/delete_model', instance_name)
+                self.call_service(
+                    DeleteEntity, '/delete_entity', instance_name)
                 del self.instances[instance_name]
         elif instance_name in self.instances:
-            self.call_service(DeleteModel, '/gazebo/delete_model', instance_name)
+            self.call_service(
+                DeleteEntity, '/delete_entity', instance_name)
             del self.instances[instance_name]
+
+
+def main(args=None):
+    rclpy.init()
+
+    table_spawner = ObjectSpawner(reference_frame="world",
+                                  bounding_box=BoundingBox(0.913, 0.913, 0.5),
+                                  model_name="cafe_table")
+    table_spawner.spawn_model(Pose(position=Point(x=0.6, y=0.0, z=-0.25)))
+
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
