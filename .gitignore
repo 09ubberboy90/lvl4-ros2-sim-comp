@@ -44,7 +44,9 @@ qtcreator-*
 /planning/src
 
 *~
-
+# Webots
+*.wbproj
+*.cache
 # Emacs
 .#*
 

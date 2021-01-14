@@ -2,14 +2,13 @@
 
 import os
 import fnmatch
+from glob import glob
 
 from setuptools import setup
 
 package_name = 'webots_simple_arm'
-worlds = [
-    'worlds/panda.wbt',
-]
-
+worlds = glob('worlds/*.wbt')
+worlds.extend(glob("worlds/*.wbo"))
 launchers = [
     'launch/panda.launch.py',
     'launch/panda_trajectory.launch.py',

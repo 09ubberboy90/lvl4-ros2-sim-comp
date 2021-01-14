@@ -50,3 +50,10 @@ DEF PANDA panda {
   hidden position_9_0 3.520479011434841e-12
   hidden position_9_1 -1.7485723681964252e-12
   }
+DEF SPAWNER Robot {
+  name "spawner"
+  controller "<extern>"
+  supervisor TRUE
+
+}
+

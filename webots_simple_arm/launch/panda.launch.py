@@ -35,7 +35,7 @@ def generate_launch_description():
             'executable': 'panda_controller',
             'world': os.path.join(package_dir, 'worlds', 'panda.wbt'),
             "publish_tf":"False",
-            "mode":"run"
+            "use_joint_state_publisher":"False",
         }.items()
     )
 
