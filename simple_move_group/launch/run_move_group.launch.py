@@ -46,7 +46,7 @@ def generate_launch_description():
     ompl_planning_pipeline_config['move_group'].update(ompl_planning_yaml)
 
     # Trajectory Execution Functionality
-    controllers_yaml = load_yaml('run_move_group', 'config/controllers.yaml')
+    controllers_yaml = load_yaml('simple_move_group', 'config/controllers.yaml')
     moveit_controllers = { 'moveit_simple_controller_manager' : controllers_yaml,
                            'moveit_controller_manager': 'moveit_simple_controller_manager/MoveItSimpleControllerManager'}
 
@@ -73,7 +73,7 @@ def generate_launch_description():
                                            planning_scene_monitor_parameters])
 
     # RViz
-    rviz_config_file = get_package_share_directory('run_move_group') + "/launch/run_move_group.rviz"
+    rviz_config_file = get_package_share_directory('simple_move_group') + "/launch/run_move_group.rviz"
     rviz_node = Node(package='rviz2',
                      executable='rviz2',
                      name='rviz2',
@@ -102,8 +102,15 @@ def generate_launch_description():
     fake_joint_driver_node = Node(package='fake_joint_driver',
                                   executable='fake_joint_driver_node',
                                   parameters=[{'controller_name': 'panda_arm_controller'},
-                                              os.path.join(get_package_share_directory("run_move_group"), "config", "panda_controllers.yaml"),
-                                              os.path.join(get_package_share_directory("run_move_group"), "config", "start_positions.yaml"),
+                                              os.path.join(get_package_share_directory("simple_move_group"), "config", "panda_controllers.yaml"),
+                                              os.path.join(get_package_share_directory("simple_move_group"), "config", "start_positions.yaml"),
+                                              robot_description]
+                                  )
+    fake_hand_driver_node = Node(package='fake_joint_driver',
+                                  executable='fake_joint_driver_node',
+                                  parameters=[{'controller_name': 'panda_hand_controller'},
+                                              os.path.join(get_package_share_directory("simple_move_group"), "config", "panda_controllers.yaml"),
+                                              os.path.join(get_package_share_directory("simple_move_group"), "config", "start_positions.yaml"),
                                               robot_description]
                                   )
 
@@ -115,4 +122,4 @@ def generate_launch_description():
                                            {'warehouse_plugin': 'warehouse_ros_mongo::MongoDatabaseConnection'}],
                                output='screen')
 
-    return LaunchDescription([ rviz_node, static_tf, robot_state_publisher, run_move_group_node, fake_joint_driver_node, mongodb_server_node ])
+    return LaunchDescription([ rviz_node, static_tf, robot_state_publisher, run_move_group_node, fake_joint_driver_node, mongodb_server_node,fake_hand_driver_node ])
