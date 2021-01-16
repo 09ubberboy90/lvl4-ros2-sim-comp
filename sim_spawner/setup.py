@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'sim_recorder'
+package_name = 'sim_spawner'
 
 setup(
     name=package_name,
@@ -20,9 +20,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "proc_monitor = sim_recorder.proc_monitor:main",
-            "proc_monitor_gui = sim_recorder.proc_monitor_gui:main",
-            "run_recording = sim_recorder.run_recording:main"
+            "webots_spawner = sim_spawner.webots_spawner:main",
+            "gazebo_spawner = sim_spawner.gazebo_spawner:main",
+
         ],
     },
 )

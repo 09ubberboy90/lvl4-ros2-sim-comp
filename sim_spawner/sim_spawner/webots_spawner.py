@@ -18,8 +18,9 @@ class SpawnerNode(WebotsNode):
         super().__init__("spawner",args)
         package_dir = get_package_share_directory('webots_simple_arm')
 
-        child = self.robot.getSelf().getField("children")
+        child = self.robot.getRoot().getField("children")
         child.importMFNode(0,os.path.join(package_dir, "worlds/Table.wbo"))
+        child.importMFNode(0,os.path.join(package_dir, "worlds/Cube.wbo"))
 
 
 def main(args=None):
