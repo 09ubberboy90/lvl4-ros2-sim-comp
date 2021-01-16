@@ -54,6 +54,7 @@ DEF SPAWNER Robot {
   name "spawner"
   controller "<extern>"
   supervisor TRUE
-
+  synchronization FALSE
+  
 }
 
