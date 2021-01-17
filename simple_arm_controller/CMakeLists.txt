@@ -21,6 +21,7 @@ find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(sim_action_server REQUIRED)
+find_package(simple_interface REQUIRED)
 find_package(ignition-transport9 REQUIRED)
 install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
@@ -45,6 +46,7 @@ ament_target_dependencies(moveit_controller
   control_msgs
   moveit_ros_planning_interface
   sim_action_server
+  simple_interface
 )
 add_executable(vr_controller controllers/vr_controller.cpp)
 ament_target_dependencies(vr_controller

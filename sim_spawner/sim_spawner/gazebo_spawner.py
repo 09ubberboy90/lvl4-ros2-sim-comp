@@ -70,7 +70,6 @@ class ServiceNode(Node):
     def __init__(self, srv_type, srv_name):
         super().__init__("service_caller")
         self.cli = self.create_client(srv_type, srv_name)
-        self.get_logger().info(f"Service created {srv_type} {srv_name}")
 
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('service not available, waiting again...')
@@ -155,6 +154,7 @@ class ObjectSpawner(object):
                 service_node.get_logger().info(
                     'Result of service: '+response.status_message)
                 if self.service is not None:
+                    print(initial_pose)
                     self.service.add_cube(initial_pose)
 
         service_node.destroy_node()
@@ -217,8 +217,8 @@ class ObjectSpawner(object):
             return valid_dirs
 
     def spawn_on_table(self, spawn=True, random_face=True,
-                       table_bbox=BoundingBox(0.32, 0.5, 0.7825),
-                       table_offset=Point(x=0.6, y=0.0, z=-0.25)):
+                       table_bbox=BoundingBox(0.913, 0.913, 0.82),
+                       table_offset=Point(x=-0.45, y=-0.45, z=-0.25)):
         """Spawns an object on a table's surface with random location and yaw. 
 
         Attributes:
@@ -240,7 +240,7 @@ class ObjectSpawner(object):
                 random.choice(fixed_rotations), \
                 random.uniform(0, 2*np.pi)
         else:
-            roll, pitch, yaw = np.pi, 0, random.uniform(0, 2*np.pi)
+            roll, pitch, yaw = 0, 0, 0
 
         q = get_rpy_quaternion(roll, pitch, yaw)
 
@@ -277,12 +277,12 @@ def main(args=None):
     rclpy.init()
     service = ObjService()
     table_spawner = ObjectSpawner(reference_frame="world",
-                                  model_name="cafe_table")
+                                  model_name="cafe_table",service=service)
     table_spawner.spawn_model(Pose(position=Point(x=0.6, y=0.0, z=-0.25)))
     block_spawner = ObjectSpawner(reference_frame="world",
                                 model_name="wood_cube_5cm",service=service)
     for i in range(10):
-        block_spawner.spawn_on_table()
+        block_spawner.spawn_on_table(random_face=False)
     rclpy.spin(service)
     
 
