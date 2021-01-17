@@ -4,6 +4,7 @@ import moveit_msgs
 import geometry_msgs
 import gazebo_msgs
 import std_msgs
+from std_srvs.srv import Empty
 from std_msgs.msg import String
 from gazebo_msgs.srv import DeleteEntity, SpawnEntity, GetModelState, GetWorldProperties
 from gazebo_msgs.msg import LinkStates
@@ -21,7 +22,10 @@ import random
 import re
 import numpy as np
 
-# >>> Utilities <<<
+try:
+    from object_service import ObjService
+except ModuleNotFoundError:
+    from .object_service import ObjService
 
 
 def define_pose(x, y, z, **kwargs):
@@ -86,6 +90,9 @@ class ServiceNode(Node):
         self.req.name = model_name
 
         self.future = self.cli.call_async(self.req)
+    
+    def send_pose(self, pose):
+        self.future = self.cli.call_async(pose)
 
 
 class ObjectSpawner(object):
@@ -94,22 +101,19 @@ class ObjectSpawner(object):
     Attributes:
         -- Provided at initalization --
         reference_frame: coordinates are used relative to ref frame [default: 'world']
-        bounding_box: defines a bounding volume for the object [default: 0.04*0.04*0.04]
         model_name: if not provided, interactively choose model [default: None]
         model_directory: if not provided, use default directory [default: None]
         verbose: How much daignostic info to print [default: 1]
     """
 
-    def __init__(self, reference_frame="world", bounding_box=BoundingBox(0.04),
+    def __init__(self, reference_frame="world",
                  model_name="obj_spawn", model_directory=None,
-                 verbose=1):
+                 verbose=1, service=None):
 
         self.instances = {}
         self.reference_frame = reference_frame
-        self.bounding_box = bounding_box
-
+        self.service = service
         self.database = False
-        
         if model_directory is None:
             self.model_dir = """\
                             <sdf version="1.6">
@@ -150,7 +154,8 @@ class ObjectSpawner(object):
                 service_node.get_logger().info("Successfully executed service")
                 service_node.get_logger().info(
                     'Result of service: '+response.status_message)
-
+                if self.service is not None:
+                    self.service.add_cube(initial_pose)
 
         service_node.destroy_node()
 
@@ -179,6 +184,7 @@ class ObjectSpawner(object):
                           "/", pose, self.reference_frame)
 
         self.instances[name] = pose
+
         return name, pose
 
     def _choose_model(self):
@@ -212,7 +218,7 @@ class ObjectSpawner(object):
 
     def spawn_on_table(self, spawn=True, random_face=True,
                        table_bbox=BoundingBox(0.32, 0.5, 0.7825),
-                       table_offset=Point(x=0.38, y=-0.1, z=0.0)):
+                       table_offset=Point(x=0.6, y=0.0, z=-0.25)):
         """Spawns an object on a table's surface with random location and yaw. 
 
         Attributes:
@@ -247,12 +253,6 @@ class ObjectSpawner(object):
         if spawn:
             name, _ = self.spawn_model(pose)
 
-            # Make model available at top level of Model directory
-            root_model_dir = path.join(self.model_dir, self.model_name)
-            if not path.exists(root_model_dir):
-                nested_model_dir = path.join(self.nested_dir, self.model_name) # FIXME: nested dir removed
-                shutil.copytree(nested_model_dir, root_model_dir)
-
             if self.verbose >= 2:
                 print("Spawned {} at (x={},y={},z={})".format(self.model_name,
                                                               x, y, z))
@@ -275,11 +275,16 @@ class ObjectSpawner(object):
 
 def main(args=None):
     rclpy.init()
-
+    service = ObjService()
     table_spawner = ObjectSpawner(reference_frame="world",
-                                  bounding_box=BoundingBox(0.913, 0.913, 0.5),
                                   model_name="cafe_table")
     table_spawner.spawn_model(Pose(position=Point(x=0.6, y=0.0, z=-0.25)))
+    block_spawner = ObjectSpawner(reference_frame="world",
+                                model_name="wood_cube_5cm",service=service)
+    for i in range(10):
+        block_spawner.spawn_on_table()
+    rclpy.spin(service)
+    
 
     rclpy.shutdown()
 
