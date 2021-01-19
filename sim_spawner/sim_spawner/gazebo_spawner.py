@@ -111,7 +111,6 @@ class ObjectSpawner(object):
 
         self.instances = {}
         self.reference_frame = reference_frame
-        self.service = service
         self.database = False
         if model_directory is None:
             self.model_dir = """\
@@ -153,9 +152,6 @@ class ObjectSpawner(object):
                 service_node.get_logger().info("Successfully executed service")
                 service_node.get_logger().info(
                     'Result of service: '+response.status_message)
-                if self.service is not None:
-                    print(initial_pose)
-                    self.service.add_cube(initial_pose)
 
         service_node.destroy_node()
 
@@ -275,15 +271,13 @@ class ObjectSpawner(object):
 
 def main(args=None):
     rclpy.init()
-    service = ObjService()
     table_spawner = ObjectSpawner(reference_frame="world",
-                                  model_name="cafe_table",service=service)
+                                  model_name="cafe_table")
     table_spawner.spawn_model(Pose(position=Point(x=0.6, y=0.0, z=-0.25)))
     block_spawner = ObjectSpawner(reference_frame="world",
-                                model_name="wood_cube_5cm",service=service)
+                                model_name="wood_cube_5cm")
     for i in range(10):
         block_spawner.spawn_on_table(random_face=False)
-    rclpy.spin(service)
     
 
     rclpy.shutdown()
