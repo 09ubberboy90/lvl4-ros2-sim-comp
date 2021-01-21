@@ -14,6 +14,8 @@ if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(ament_cmake REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -23,23 +25,25 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(sim_action_server REQUIRED)
 find_package(simple_interface REQUIRED)
 find_package(ignition-transport9 REQUIRED)
+find_package(gazebo_msgs REQUIRED)
 install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
 )
+include_directories(include)
 
-add_executable(gazebo_controller controllers/gazebo_controller.cpp)
+add_executable(gazebo_controller src/gazebo_controller.cpp)
 ament_target_dependencies(gazebo_controller
   rclcpp
   rclcpp_action
   control_msgs
 )
-add_executable(webots_controller controllers/webots_controller.cpp)
+add_executable(webots_controller src/webots_controller.cpp)
 ament_target_dependencies(webots_controller
   rclcpp
   rclcpp_action
   control_msgs
 )
-add_executable(moveit_controller controllers/moveit_controller.cpp)
+add_executable(moveit_controller src/moveit_controller.cpp include/moveit_controller.hpp)
 ament_target_dependencies(moveit_controller
   rclcpp
   rclcpp_action
@@ -47,8 +51,9 @@ ament_target_dependencies(moveit_controller
   moveit_ros_planning_interface
   sim_action_server
   simple_interface
+  gazebo_msgs
 )
-add_executable(vr_controller controllers/vr_controller.cpp)
+add_executable(vr_controller src/vr_controller.cpp)
 ament_target_dependencies(vr_controller
   rclcpp
   rclcpp_action
@@ -56,14 +61,13 @@ ament_target_dependencies(vr_controller
   moveit_ros_planning_interface
   sim_action_server
 )
-add_executable(ign_controller controllers/ign_controller.cpp)
+add_executable(ign_controller src/ign_controller.cpp)
 ament_target_dependencies(ign_controller
   rclcpp
   rclcpp_action
   control_msgs
   ignition-transport9
 )
-
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
@@ -76,4 +80,9 @@ endif()
 install(TARGETS gazebo_controller webots_controller moveit_controller ign_controller vr_controller
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(DIRECTORY include
+  DESTINATION include/${PROJECT_NAME}/)
+  
+
 ament_package()
