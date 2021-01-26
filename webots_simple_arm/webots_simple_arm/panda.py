@@ -13,9 +13,9 @@ except Exception as e:
 
 class PandaNode(WebotsNode):
     def __init__(self, args=None):
-        super().__init__("panda",args, enableJointState=False)
+        super().__init__("panda",args)
         os.environ['WEBOTS_ROBOT_NAME'] = "panda"
-        self.trajectoryFollower = TrajectoryFollower(self.robot, self, jointPrefix="")
+        self.trajectoryFollower = TrajectoryFollower(self.robot, self, joint_prefix="")
         self.nodes = {}
         for i in range(self.robot.getNumberOfDevices()):
             device = self.robot.getDeviceByIndex(i)

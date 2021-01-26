@@ -70,15 +70,18 @@ int main(int argc, char **argv)
             primitive.dimensions.resize(3);
             if (i == 0) // table
             {
-                primitive.dimensions[0] = 0.913;
-                primitive.dimensions[1] = 0.913;
-                primitive.dimensions[2] = 0.82;
+                primitive.dimensions[0] = 0.914;
+                primitive.dimensions[1] = 0.5;
+                primitive.dimensions[2] = 0.914;
+                pose.position.z +=0.25;
             }
             else // cube
             {
                 primitive.dimensions[0] = 0.05;
                 primitive.dimensions[1] = 0.05;
                 primitive.dimensions[2] = 0.05;
+                pose.position.z +=0.025;
+
             }
             if (i == 1)
             {
