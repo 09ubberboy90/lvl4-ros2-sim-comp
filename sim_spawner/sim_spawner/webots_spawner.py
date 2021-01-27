@@ -30,9 +30,12 @@ class SpawnerNode(WebotsNode):
         self.objs = {}
 
         self.spawn_obj("worlds/Table.wbo")
-        for x in range(-4, 5):
-            for y in range(-4, 5):
-                self.spawn_obj("worlds/Cube.wbo", [x/10, y/10, 0.55])
+        self.spawn_obj("worlds/Cube.wbo", [0.3, 0, 0.55])
+        # for x in range(-4, 5):
+        #     for y in range(-4, 5):
+        #         if x == 0.3 and y == 0:
+        #             continue
+        #         self.spawn_obj("worlds/Cube.wbo", [x/10, y/10, 0.55])
 
     def spawn_obj(self, path, position=[0, 0, 0], offset=[0.6, 0, 0]):
         out = []
