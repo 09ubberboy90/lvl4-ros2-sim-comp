@@ -1,5 +1,6 @@
 #include "moveit.hpp"
 using std::placeholders::_1;
+using namespace Eigen;
 
 void grip_obj(std::shared_ptr<rclcpp::Node> move_group_node, moveit_msgs::msg::CollisionObject obj)
 {
@@ -24,8 +25,12 @@ int main(int argc, char **argv)
 
     moveit::planning_interface::MoveGroupInterface move_group(move_group_node, PLANNING_GROUP);
     moveit::planning_interface::MoveGroupInterface hand_move_group(move_group_node, "hand");
-    std::cout << move_group_node->get_name() << std::endl;
 
+    for(auto link : move_group.getJointNames())
+    {
+        std::cout << link << std::endl;
+    }
+    std::cout <<     hand_move_group.getEndEffector() << std::endl;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface(move_group_node->get_name());
 
     std::string action_node_name;
@@ -42,27 +47,25 @@ int main(int argc, char **argv)
     {
 
         auto start_pose = move_group.getCurrentPose().pose;
-        std::cout << "0"<< std::endl;
         std::vector<std::string> targets;
-        std::cout << "1"<< std::endl;
         targets.push_back("target");
-        std::cout << "2"<< std::endl;
         
         auto poses = planning_scene_interface.getObjectPoses(targets);
-        std::cout << "3"<< std::endl;
         auto pose = poses["target"];
-        pose.position.z += 0.2;
-        std::cout << pose.position.x << ","<<pose.position.y << ","<<pose.position.z << "," << std::endl;
-        std::cout << start_pose.position.x << ","<<start_pose.position.y << ","<<start_pose.position.z << "," << std::endl;
-        std::cout << start_pose.orientation.x << ","<<start_pose.orientation.y << ","<<start_pose.orientation.z << ","<<start_pose.orientation.w << std::endl;
-        std::cout << "4"<< std::endl;
+        pose.position.z += 0.15;
+        std::cout << pose.orientation.x << ","<<pose.orientation.y << ","<<pose.orientation.z << ","<<pose.orientation.w << std::endl;
 
-        geometry_msgs::msg::Pose test_pose;
-        test_pose.position.x = 0.33;
-        test_pose.position.y = 0.04;
-        test_pose.position.z = 0.52;
-        test_pose.orientation.w = 0;
-        move_group.setPoseTarget(test_pose);
+        Quaternionf q;
+        q = AngleAxisf(3.14, Vector3f::UnitX())
+            * AngleAxisf(0, Vector3f::UnitY())
+            * AngleAxisf(0.785, Vector3f::UnitZ());
+        std::cout << "Quaternion" << std::endl << q.coeffs() << std::endl;
+
+        pose.orientation.w = q.w();
+        pose.orientation.x = q.x();
+        pose.orientation.y = q.y();
+        pose.orientation.z = q.z();
+        move_group.setPoseTarget(pose);
 
 //        collision_object[1].header.frame_id = move_group.getEndEffectorLink();
 //        move_group.attachObject(collision_object[1].id, "hand");
@@ -81,12 +84,13 @@ int main(int argc, char **argv)
             if (success)
             {
                 std::thread([&move_group]() { move_group.asyncMove(); }).detach();
+                //std::thread([&server, my_plan](){server->execute_plan(my_plan.trajectory_.joint_trajectory);}).detach();
                 server->execute_plan(my_plan.trajectory_.joint_trajectory);
                 break;
             }
 
         }
-        
+
         // move_group.setPoseTarget(start_pose);
         // move_group.detachObject(collision_object[1].id);
 

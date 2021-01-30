@@ -20,7 +20,7 @@ except Exception as e:
 
 class SpawnerNode(WebotsNode):
     def __init__(self, args=None):
-        super().__init__("spawner", args)
+        super().__init__("webots_spawner", args)
         self.package_dir = get_package_share_directory('webots_simple_arm')
         self.children = self.robot.getRoot().getField("children")
         self.entity = self.create_service(
@@ -29,21 +29,22 @@ class SpawnerNode(WebotsNode):
             GetModelList, 'get_model_list', self.get_model_list)
         self.objs = {}
 
-        self.spawn_obj("worlds/Table.wbo")
-        self.spawn_obj("worlds/Cube.wbo", [0.3, 0, 0.55])
+        self.spawn_obj("worlds/Table.wbo", rotation = [1,0,0,1.57])
+        self.spawn_obj("worlds/Cube.wbo", position = [0.3-0.6, 0, 0.55])
         # for x in range(-4, 5):
         #     for y in range(-4, 5):
         #         if x == 0.3 and y == 0:
         #             continue
         #         self.spawn_obj("worlds/Cube.wbo", [x/10, y/10, 0.55])
 
-    def spawn_obj(self, path, position=[0, 0, 0], offset=[0.6, 0, 0]):
+    def spawn_obj(self, path, position=[0, 0, 0], offset=[0.6, 0, 0], rotation = [0,1,0,0]):
         out = []
         for i, j in zip(position, offset):
             out.append(i+j)
         self.children.importMFNode(0, os.path.join(self.package_dir, path))
         obj = self.children.getMFNode(0)
         obj.getField("translation").setSFVec3f(out)
+        obj.getField("rotation").setSFRotation(rotation)
         self.objs[obj.getField("name").getSFString()] = obj
 
     def get_model_list(self, request: GetModelList.Request, response: GetModelList.Response):
