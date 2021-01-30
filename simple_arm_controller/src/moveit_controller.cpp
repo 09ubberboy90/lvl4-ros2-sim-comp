@@ -1,28 +1,11 @@
-#include "moveit_controller.hpp"
+#include "moveit.hpp"
+using std::placeholders::_1;
 
 void grip_obj(std::shared_ptr<rclcpp::Node> move_group_node, moveit_msgs::msg::CollisionObject obj)
 {
     moveit::planning_interface::MoveGroupInterface hand_move_group(move_group_node, "hand");
 
 }
-class ObjectiveSubscriber : public rclcpp::Node
-{
-public:
-    ObjectiveSubscriber()
-        : Node("objective_subscribe")
-    {
-        subscription_ = this->create_subscription<geometry_msgs::msg::Pose>("pose_target", 10, std::bind(&ObjectiveSubscriber::topic_callback, this));
-    }
-    geometry_msgs::msg::Pose pose;
-
-private:
-    void topic_callback(const geometry_msgs::msg::Pose pose)
-    {
-        this->pose = pose;
-    }
-    rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr subscription_;
-};
-
 int main(int argc, char **argv)
 {
 
@@ -31,17 +14,17 @@ int main(int argc, char **argv)
     rclcpp::NodeOptions node_options;
     node_options.automatically_declare_parameters_from_overrides(true);
     auto move_group_node = rclcpp::Node::make_shared("move_group_interface", node_options);
-    auto objective_subscriber_node = std::make_shared<ObjectiveSubscriber>();
+
     // For current state monitor
-    rclcpp::executors::MultiThreadedExecutor executor;
+    rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(move_group_node);
-    executor.add_node(objective_subscriber_node);
-    executor.spin();
+    std::thread([&executor]() { executor.spin(); }).detach();
 
     static const std::string PLANNING_GROUP = "panda_arm";
 
     moveit::planning_interface::MoveGroupInterface move_group(move_group_node, PLANNING_GROUP);
     moveit::planning_interface::MoveGroupInterface hand_move_group(move_group_node, "hand");
+    std::cout << move_group_node->get_name() << std::endl;
 
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface(move_group_node->get_name());
 
@@ -58,8 +41,29 @@ int main(int argc, char **argv)
     if (move_group_node->get_parameter("use_spawn_obj", use_spawn_obj))
     {
 
-        auto start_pose = move_group.getCurrentPose();
-        move_group.setPoseTarget(objective_subscriber_node->pose);
+        auto start_pose = move_group.getCurrentPose().pose;
+        std::cout << "0"<< std::endl;
+        std::vector<std::string> targets;
+        std::cout << "1"<< std::endl;
+        targets.push_back("target");
+        std::cout << "2"<< std::endl;
+        
+        auto poses = planning_scene_interface.getObjectPoses(targets);
+        std::cout << "3"<< std::endl;
+        auto pose = poses["target"];
+        pose.position.z += 0.2;
+        std::cout << pose.position.x << ","<<pose.position.y << ","<<pose.position.z << "," << std::endl;
+        std::cout << start_pose.position.x << ","<<start_pose.position.y << ","<<start_pose.position.z << "," << std::endl;
+        std::cout << start_pose.orientation.x << ","<<start_pose.orientation.y << ","<<start_pose.orientation.z << ","<<start_pose.orientation.w << std::endl;
+        std::cout << "4"<< std::endl;
+
+        geometry_msgs::msg::Pose test_pose;
+        test_pose.position.x = 0.33;
+        test_pose.position.y = 0.04;
+        test_pose.position.z = 0.52;
+        test_pose.orientation.w = 0;
+        move_group.setPoseTarget(test_pose);
+
 //        collision_object[1].header.frame_id = move_group.getEndEffectorLink();
 //        move_group.attachObject(collision_object[1].id, "hand");
 

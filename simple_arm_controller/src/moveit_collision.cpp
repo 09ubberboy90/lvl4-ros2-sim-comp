@@ -1,4 +1,4 @@
-#include "moveit_controller.hpp"
+#include "moveit.hpp"
 
 using namespace std::chrono_literals;
 
@@ -26,38 +26,6 @@ void result_handler(std::shared_future<std::shared_ptr<gazebo_msgs::srv::GetEnti
     poses->poses.push_back(result.get()->state.pose);
 }
 
-void grip_obj(std::shared_ptr<rclcpp::Node> move_group_node, moveit_msgs::msg::CollisionObject obj)
-{
-    moveit::planning_interface::MoveGroupInterface hand_move_group(move_group_node, "hand");
-}
-
-void timer_callback()
-{
-}
-class ObjectivePublisher : public rclcpp::Node
-{
-public:
-    ObjectivePublisher()
-        : Node("objective_publisher")
-    {
-        publisher_ = this->create_publisher<geometry_msgs::msg::Pose>("pose_target", 10);
-        timer_ = this->create_wall_timer(
-            500ms, std::bind(&ObjectivePublisher::timer_callback, this));
-    }
-    geometry_msgs::msg::Pose pose;
-
-private:
-    void timer_callback()
-    {
-
-        if (this->count_publishers("pose_target"))
-        {
-            publisher_->publish(pose);
-        }
-    }
-    rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<geometry_msgs::msg::Pose>::SharedPtr publisher_;
-};
 
 int main(int argc, char **argv)
 {
@@ -67,29 +35,28 @@ int main(int argc, char **argv)
     rclcpp::NodeOptions node_options;
     node_options.automatically_declare_parameters_from_overrides(true);
     auto move_group_node = rclcpp::Node::make_shared("moveit_collision", node_options);
-    auto objective_publisher_node = std::make_shared<ObjectivePublisher>();
     // For current state monitor
-    rclcpp::executors::MultiThreadedExecutor executor;
+    rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(move_group_node);
-    executor.add_node(objective_publisher_node);
-    executor.spin();
+    std::thread([&executor]() { executor.spin(); }).detach();
 
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface(move_group_node->get_name());
     bool use_spawn_obj;
     if (move_group_node->get_parameter("use_spawn_obj", use_spawn_obj))
     {
-        geometry_msgs::msg::PoseArray poses;
-        service_caller<gazebo_msgs::srv::GetModelList>("get_model_list", &poses);
-        moveit_msgs::msg::CollisionObject collision_object[poses.poses.size()];
         while (true)
         {
-            /* code */
+            geometry_msgs::msg::PoseArray poses;
+            std::vector< moveit_msgs::msg::CollisionObject>  collision_object;
+            service_caller<gazebo_msgs::srv::GetModelList>("get_model_list", &poses);
+            std::cout << poses.poses.size() << std::endl;
 
             for (int i = 0; i < poses.poses.size(); i++)
             {
+                moveit_msgs::msg::CollisionObject obj;
                 auto pose = poses.poses[i];
-                collision_object[i].header.frame_id = "panda_arm";
-                collision_object[i].id = "Box" + i;
+                obj.header.frame_id = "world";
+                obj.id = "Box" + i;
                 shape_msgs::msg::SolidPrimitive primitive;
                 primitive.type = primitive.BOX;
                 primitive.dimensions.resize(3);
@@ -109,16 +76,19 @@ int main(int argc, char **argv)
                 }
                 if (i == 1)
                 {
-                    objective_publisher_node->pose = pose;
+                    std::cout << pose.position.x << ","<<pose.position.y << ","<<pose.position.z << "," << std::endl;
+                    obj.id = "target";
                 }
                 
 
-                collision_object[i].primitives.push_back(primitive);
-                collision_object[i].primitive_poses.push_back(pose);
-                collision_object[i].operation = collision_object[i].ADD;
-                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Add an object into the world");
-                planning_scene_interface.applyCollisionObject(collision_object[i]);
+                obj.primitives.push_back(primitive);
+                obj.primitive_poses.push_back(pose);
+                obj.operation = obj.ADD;
+                collision_object.push_back(obj);
             }
+            planning_scene_interface.addCollisionObjects(collision_object);
+            std::cout << collision_object.size() << std::endl;
+            //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Add an object into the world");
         }
     }
 
