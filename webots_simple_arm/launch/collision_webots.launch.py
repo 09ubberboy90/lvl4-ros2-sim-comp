@@ -37,24 +37,19 @@ def generate_launch_description():
 
     kinematics_yaml = load_yaml('moveit_resources_panda_moveit_config', 'config/kinematics.yaml')
 
-    # MoveGroupInterface demo executable
-    # run_move_group_demo = Node(name='moveit_move_group',
-    #                            package='simple_arm_control',
-    #                            executable='moveit_controller',
-    #                            output='screen',
-    #                            parameters=[robot_description,
-    #                                        robot_description_semantic,
-    #                                        kinematics_yaml,
-    #                                        {"action_node_name": "/follow_joint_trajectory"},
-    #                                        {"use_spawn_obj": True}])
     
-    moveit_collision = Node(name='moveit_collision',
-                               package='simple_arm_control',
-                               executable='moveit_collision',
-                               output='screen',
-                               parameters=[robot_description,
-                                           robot_description_semantic,
-                                           kinematics_yaml,
-                                           {"use_spawn_obj": True}])
+    webots_spawner = Node(name='webots_spawner',
+                            package='sim_spawner',
+                            executable='webots_spawner',
+                            output='screen')
 
-    return LaunchDescription([ moveit_collision])
+    moveit_collision = Node(name='moveit_collision',
+                            package='simple_arm_control',
+                            executable='moveit_collision',
+                            output='screen',
+                            parameters=[robot_description,
+                                        robot_description_semantic,
+                                        kinematics_yaml,
+                                        {"use_spawn_obj": True}])
+
+    return LaunchDescription([webots_spawner, moveit_collision])

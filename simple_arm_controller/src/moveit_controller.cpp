@@ -99,6 +99,8 @@ int main(int argc, char **argv)
         move_group.attachObject("target");
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to pose");
         goto_pose(&move_group, server, start_pose);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
+        change_gripper(&hand_move_group, server, gripper_state::opened);
         move_group.detachObject("target");
     }
 
