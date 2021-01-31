@@ -31,18 +31,6 @@ install(DIRECTORY
 )
 include_directories(include)
 
-add_executable(gazebo_controller src/gazebo_controller.cpp)
-ament_target_dependencies(gazebo_controller
-  rclcpp
-  rclcpp_action
-  control_msgs
-)
-add_executable(webots_controller src/webots_controller.cpp)
-ament_target_dependencies(webots_controller
-  rclcpp
-  rclcpp_action
-  control_msgs
-)
 add_executable(moveit_controller src/moveit_controller.cpp include/moveit.hpp)
 ament_target_dependencies(moveit_controller
   rclcpp
@@ -87,7 +75,7 @@ if(BUILD_TESTING)
 endif()
 
 ## Install
-install(TARGETS gazebo_controller webots_controller moveit_controller ign_controller vr_controller moveit_collision
+install(TARGETS moveit_controller ign_controller vr_controller moveit_collision
   DESTINATION lib/${PROJECT_NAME}
 )
 
