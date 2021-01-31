@@ -31,20 +31,17 @@
 void namer(std::shared_ptr<gazebo_msgs::srv::GetModelList_Request>, std::string);
 void namer(std::shared_ptr<gazebo_msgs::srv::GetEntityState_Request>, std::string);
 
-void result_handler(std::shared_future<std::shared_ptr<gazebo_msgs::srv::GetModelList_Response>>, geometry_msgs::msg::PoseArray *);
-void result_handler(std::shared_future<std::shared_ptr<gazebo_msgs::srv::GetEntityState_Response>>, geometry_msgs::msg::PoseArray *);
+void result_handler(std::shared_ptr<rclcpp::Node>,std::shared_future<std::shared_ptr<gazebo_msgs::srv::GetModelList_Response>>, geometry_msgs::msg::PoseArray *);
+void result_handler(std::shared_ptr<rclcpp::Node>,std::shared_future<std::shared_ptr<gazebo_msgs::srv::GetEntityState_Response>>, geometry_msgs::msg::PoseArray *);
 
 
 
 template <typename MessageType>
-void service_caller(std::string srv_name, geometry_msgs::msg::PoseArray *poses, std::string arg="");
-
+void service_caller(std::shared_ptr<rclcpp::Node>, std::string, geometry_msgs::msg::PoseArray *, std::string arg="");
 
 template <typename MessageType>
-void service_caller(std::string srv_name, geometry_msgs::msg::PoseArray *poses, std::string arg)
+void service_caller(std::shared_ptr<rclcpp::Node> node, std::string srv_name, geometry_msgs::msg::PoseArray *poses, std::string arg)
 {
-
-    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(srv_name);
     typename rclcpp::Client<MessageType>::SharedPtr model_list_cl =
         node->create_client<MessageType>(srv_name);
 
@@ -68,7 +65,7 @@ void service_caller(std::string srv_name, geometry_msgs::msg::PoseArray *poses, 
     if (rclcpp::spin_until_future_complete(node, result) ==
         rclcpp::FutureReturnCode::SUCCESS)
     {
-        result_handler(result, poses);
+        result_handler(node, result, poses);
     }
     else
     {
