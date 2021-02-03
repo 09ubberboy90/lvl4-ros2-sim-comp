@@ -1,6 +1,7 @@
 #include "moveit.hpp"
 using std::placeholders::_1;
 using namespace Eigen;
+using namespace std::chrono_literals;
 
 enum gripper_state {opened=35, closed=0};
 
@@ -20,6 +21,9 @@ bool wait_for_exec(moveit::planning_interface::MoveGroupInterface * move_group, 
             return true;
         }
     }
+    auto pose = move_group->getPoseTarget().pose.position;
+    RCLCPP_ERROR(server->get_logger(), "Failed to find a valid path to %f, %f, %f", pose.x, pose.y, pose.z);
+    throw -1;
     return false;
 }
 
@@ -38,10 +42,35 @@ bool change_gripper(moveit::planning_interface::MoveGroupInterface * hand_move_g
 }
 
 bool goto_pose(moveit::planning_interface::MoveGroupInterface * move_group, std::shared_ptr<sim_action_server::ActionServer> server, geometry_msgs::msg::Pose pose)
-{
+{   
     move_group->setPoseTarget(pose);
     return wait_for_exec(move_group, server);
 }
+class SetParam : public rclcpp::Node
+{
+public:
+    SetParam() : Node("set_param")
+    {
+        publisher_ = this->create_publisher<std_msgs::msg::Bool>("stop_updating_obj", 10);
+        timer_ = this->create_wall_timer(100ms, std::bind(&SetParam::timer_callback, this));
+
+    };
+    void set_param(bool new_param)
+    {
+        param = new_param;
+    }
+
+private:
+    bool param = false;
+    void timer_callback()
+    {
+        auto message = std_msgs::msg::Bool();
+        message.data = param;
+        publisher_->publish(message);
+    }
+    rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr publisher_;
+};
 
 int main(int argc, char **argv)
 {
@@ -51,10 +80,12 @@ int main(int argc, char **argv)
     rclcpp::NodeOptions node_options;
     node_options.automatically_declare_parameters_from_overrides(true);
     auto move_group_node = rclcpp::Node::make_shared("move_group_interface", node_options);
+    auto parameter_server = std::make_shared<SetParam>();
 
     // For current state monitor
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(move_group_node);
+    executor.add_node(parameter_server);
     std::thread([&executor]() { executor.spin(); }).detach();
 
     static const std::string PLANNING_GROUP = "panda_arm";
@@ -62,7 +93,7 @@ int main(int argc, char **argv)
     moveit::planning_interface::MoveGroupInterface move_group(move_group_node, PLANNING_GROUP);
     moveit::planning_interface::MoveGroupInterface hand_move_group(move_group_node, "hand");
 
-    moveit::planning_interface::PlanningSceneInterface planning_scene_interface(move_group_node->get_name());
+    moveit::planning_interface::PlanningSceneInterface planning_scene_interface("");
 
     std::string action_node_name;
     bool use_spawn_obj;
@@ -82,9 +113,12 @@ int main(int argc, char **argv)
         change_gripper(&hand_move_group, server, gripper_state::opened);
 
         std::vector<std::string> targets = {"target"};
-        auto poses = planning_scene_interface.getObjectPoses(targets);
-        auto pose = poses["target"];
-
+        auto collision_objects = planning_scene_interface.getObjects(targets);
+        auto collision_object = collision_objects["target"];
+        std::vector<std::string> ids = {collision_object.id};
+        auto pose = collision_object.primitive_poses[0];
+        auto size = collision_object.primitives[0];
+        //planning_scene_interface.removeCollisionObjects(ids);
         Quaternionf q = AngleAxisf(3.14, Vector3f::UnitX()) * AngleAxisf(0, Vector3f::UnitY()) * AngleAxisf(0.785, Vector3f::UnitZ());
         
         pose.position.z += 0.1;
@@ -95,13 +129,18 @@ int main(int argc, char **argv)
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to pose");
         goto_pose(&move_group, server, pose);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Closing hand");
-        change_gripper(&hand_move_group, server, gripper_state::closed);
+        parameter_server->set_param(true);
+        collision_object.operation = collision_object.REMOVE;
+        planning_scene_interface.applyCollisionObject(collision_object);
         move_group.attachObject("target");
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to pose");
+        change_gripper(&hand_move_group, server, gripper_state::closed);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to pose");        
         goto_pose(&move_group, server, start_pose);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
         change_gripper(&hand_move_group, server, gripper_state::opened);
         move_group.detachObject("target");
+        parameter_server->set_param(false);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
     rclcpp::shutdown();

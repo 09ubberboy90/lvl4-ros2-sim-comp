@@ -19,6 +19,7 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 
 #include "geometry_msgs/msg/pose_array.hpp"
+#include "std_msgs/msg/bool.hpp"
 
 #include "control_msgs/action/follow_joint_trajectory.hpp"
 #include "sim_action_server.hpp"
