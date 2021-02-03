@@ -103,7 +103,6 @@ int main(int argc, char **argv)
                     obj.id = "target";
                     if (parameter_server->get_param())
                     {
-                        std::cout << "Skipping" << std::endl;
                         continue;
                     }
                 }

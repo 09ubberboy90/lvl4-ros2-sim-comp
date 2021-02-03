@@ -16,7 +16,7 @@ bool wait_for_exec(moveit::planning_interface::MoveGroupInterface * move_group, 
 
         if (success)
         {
-            std::thread([move_group]() { move_group->asyncMove(); }).detach();
+            std::thread([move_group]() { move_group->move(); }).detach();
             server->execute_plan(plan.trajectory_.joint_trajectory);
             return true;
         }
@@ -33,7 +33,6 @@ bool change_gripper(moveit::planning_interface::MoveGroupInterface * hand_move_g
     std::vector<double> joint_group_positions;
     current_state->copyJointGroupPositions(current_state->getJointModelGroup("hand"), joint_group_positions);
     float pose = (float) state/1000;
-    std::cout << state << "," << pose << std::endl;
     joint_group_positions[0] = pose; 
     joint_group_positions[1] = pose; 
     hand_move_group->setJointValueTarget(joint_group_positions);
@@ -83,7 +82,7 @@ int main(int argc, char **argv)
     auto parameter_server = std::make_shared<SetParam>();
 
     // For current state monitor
-    rclcpp::executors::SingleThreadedExecutor executor;
+    rclcpp::executors::MultiThreadedExecutor executor;
     executor.add_node(move_group_node);
     executor.add_node(parameter_server);
     std::thread([&executor]() { executor.spin(); }).detach();
@@ -92,7 +91,8 @@ int main(int argc, char **argv)
 
     moveit::planning_interface::MoveGroupInterface move_group(move_group_node, PLANNING_GROUP);
     moveit::planning_interface::MoveGroupInterface hand_move_group(move_group_node, "hand");
-
+    move_group.allowReplanning(true);
+    move_group.setNumPlanningAttempts(10);
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface("");
 
     std::string action_node_name;
@@ -115,10 +115,7 @@ int main(int argc, char **argv)
         std::vector<std::string> targets = {"target"};
         auto collision_objects = planning_scene_interface.getObjects(targets);
         auto collision_object = collision_objects["target"];
-        std::vector<std::string> ids = {collision_object.id};
         auto pose = collision_object.primitive_poses[0];
-        auto size = collision_object.primitives[0];
-        //planning_scene_interface.removeCollisionObjects(ids);
         Quaternionf q = AngleAxisf(3.14, Vector3f::UnitX()) * AngleAxisf(0, Vector3f::UnitY()) * AngleAxisf(0.785, Vector3f::UnitZ());
         
         pose.position.z += 0.1;
@@ -135,12 +132,28 @@ int main(int argc, char **argv)
         move_group.attachObject("target");
         change_gripper(&hand_move_group, server, gripper_state::closed);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to pose");        
-        goto_pose(&move_group, server, start_pose);
+        pose.position.x += 0.2;
+        goto_pose(&move_group, server, pose);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
         change_gripper(&hand_move_group, server, gripper_state::opened);
         move_group.detachObject("target");
         parameter_server->set_param(false);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        goto_pose(&move_group, server, start_pose);
+        collision_objects = planning_scene_interface.getObjects(targets);
+        collision_object = collision_objects["target"];
+        auto new_pose = collision_object.primitive_poses[0];
+        std::cout <<new_pose.position.x << "," << pose.position.x << std::endl;
+        if ((new_pose.position.x < pose.position.x-0.05) || (pose.position.x+0.05 < new_pose.position.x))
+        {
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Cube is not in bound");
+        }
+        else
+        {
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Task completed Succesfully");
+        }
+        
+        
     }
 
     rclcpp::shutdown();
