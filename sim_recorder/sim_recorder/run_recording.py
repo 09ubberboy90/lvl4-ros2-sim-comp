@@ -91,11 +91,12 @@ class Gazebo():
     def __init__(self):
         self.name = "gazebo"
         self.commands = [
+            "ros2 launch simple_arm gazebo.launch.py",
             "ros2 launch run_move_group run_move_group.launch.py",
-            "ros2 launch webots_simple_arm panda_trajectory.launch.py",
-            "ros2 launch webots_simple_arm moveit_webots.launch.py",
+            "ros2 launch simple_arm collision_gazebo.launch.py",
+            "ros2 launch simple_arm moveit_gazebo.launch.py",
         ]
-        self.delays = [5, 10, 0]
+        self.delays = [5, 10, 5]
 
 def handler(signum, frame):
     raise Exception("TimeOut")

@@ -22,11 +22,6 @@ import random
 import re
 import numpy as np
 
-try:
-    from object_service import ObjService
-except ModuleNotFoundError:
-    from .object_service import ObjService
-
 
 def define_pose(x, y, z, **kwargs):
     """Returns a Pose based on x,y,z and optionally o_x,o_y,o_z and o_w"""
@@ -273,11 +268,10 @@ def main(args=None):
     rclpy.init()
     table_spawner = ObjectSpawner(reference_frame="world",
                                   model_name="cafe_table")
-    table_spawner.spawn_model(Pose(position=Point(x=0.6, y=0.0, z=-0.25)))
+    table_spawner.spawn_model(Pose(position=Point(x=0.6, y=0.0, z=-0.45)))
     block_spawner = ObjectSpawner(reference_frame="world",
                                 model_name="wood_cube_5cm")
-    for i in range(10):
-        block_spawner.spawn_on_table(random_face=False)
+    block_spawner.spawn_model(Pose(position=Point(x=0.2, y=0.0, z=0.55)))
     
 
     rclpy.shutdown()

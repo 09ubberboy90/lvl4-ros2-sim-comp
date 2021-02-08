@@ -64,7 +64,8 @@ int main(int argc, char **argv)
     executor.add_node(parameter_server);
     std::thread([&executor]() { executor.spin(); }).detach();
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface("");
-
+    bool gazebo;
+    move_group_node->get_parameter("gazebo", gazebo);
     bool use_spawn_obj;
     if (move_group_node->get_parameter("use_spawn_obj", use_spawn_obj))
     {
@@ -88,9 +89,20 @@ int main(int argc, char **argv)
                 if (i == 0) // table
                 {
                     primitive.dimensions[0] = 0.914;
-                    primitive.dimensions[1] = 0.5;
-                    primitive.dimensions[2] = 0.914;
-                    pose.position.z += primitive.dimensions[1] / 2;
+                    if (gazebo)
+                    {
+                        primitive.dimensions[2] = 0.5;
+                        primitive.dimensions[1] = 0.914;
+                        pose.position.z += primitive.dimensions[2] / 2;
+                    }
+                    else
+                    {
+                        primitive.dimensions[1] = 0.5;
+                        primitive.dimensions[2] = 0.914;
+                        pose.position.z += primitive.dimensions[1] / 2;
+                    }
+                    
+                    
                 }
                 else // cube
                 {
