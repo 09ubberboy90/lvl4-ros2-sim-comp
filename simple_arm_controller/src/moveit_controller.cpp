@@ -16,14 +16,15 @@ bool wait_for_exec(moveit::planning_interface::MoveGroupInterface * move_group, 
 
         if (success)
         {
-            std::thread([move_group]() { move_group->move(); }).detach();
+            //std::thread([move_group, plan]() { move_group->execute(plan); }).detach();
+            move_group->asyncExecute(plan); 
             server->execute_plan(plan.trajectory_.joint_trajectory);
             return true;
         }
     }
     auto pose = move_group->getPoseTarget().pose.position;
     RCLCPP_ERROR(server->get_logger(), "Failed to find a valid path to %f, %f, %f", pose.x, pose.y, pose.z);
-    throw -1;
+    throw "Couldn't plan a path";
     return false;
 }
 
@@ -123,27 +124,45 @@ int main(int argc, char **argv)
         pose.orientation.x = q.x();
         pose.orientation.y = q.y();
         pose.orientation.z = q.z();
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to pose");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to object pose");
         goto_pose(&move_group, server, pose);
+        
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Closing hand");
         parameter_server->set_param(true);
         collision_object.operation = collision_object.REMOVE;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         planning_scene_interface.applyCollisionObject(collision_object);
-        move_group.attachObject("target");
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        //move_group.attachObject("target");
         change_gripper(&hand_move_group, server, gripper_state::closed);
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to pose");        
+
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lifting");        
+        pose.position.z += 0.1;
+        goto_pose(&move_group, server, pose);
+
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to target pose");        
         pose.position.x += 0.2;
         goto_pose(&move_group, server, pose);
+        
+        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lowering");        
+        // pose.position.z -= 0.1;
+        // goto_pose(&move_group, server, pose);
+
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
         change_gripper(&hand_move_group, server, gripper_state::opened);
-        move_group.detachObject("target");
+        //move_group.detachObject("target");
         parameter_server->set_param(false);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to start pose");        
         goto_pose(&move_group, server, start_pose);
         collision_objects = planning_scene_interface.getObjects(targets);
         collision_object = collision_objects["target"];
         auto new_pose = collision_object.primitive_poses[0];
         std::cout <<new_pose.position.x << "," << pose.position.x << std::endl;
+        std::cout <<new_pose.position.y << "," << pose.position.y << std::endl;
+        std::cout <<new_pose.position.z << "," << pose.position.z << std::endl;
+        
         if ((new_pose.position.x < pose.position.x-0.05) || (pose.position.x+0.05 < new_pose.position.x))
         {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Cube is not in bound");

@@ -84,6 +84,7 @@ int main(int argc, char **argv)
                 shape_msgs::msg::SolidPrimitive primitive;
                 primitive.type = primitive.BOX;
                 primitive.dimensions.resize(3);
+                obj.operation = obj.ADD;
                 if (i == 0) // table
                 {
                     primitive.dimensions[0] = 0.914;
@@ -109,10 +110,9 @@ int main(int argc, char **argv)
 
                 obj.primitives.push_back(primitive);
                 obj.primitive_poses.push_back(pose);
-                obj.operation = obj.ADD;
                 collision_object.push_back(obj);
             }
-            planning_scene_interface.addCollisionObjects(collision_object);
+            planning_scene_interface.applyCollisionObjects(collision_object);
             //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Add an object into the world");
         }
     }
