@@ -34,7 +34,6 @@ def kill_proc_tree(pids, procs,interrupt_event, including_parent=False):
 # Reference : https://stackoverflow.com/a/40281422
 def interrupt_handler(interrupt_event):
     interrupt_event.wait()
-    print("Interupting")
     _thread.interrupt_main()
 
 
@@ -44,30 +43,31 @@ def run_com(w, q, com):
     q.put(proc.pid)
 
 
-def run_recorder(q, interrupt_event, simulator, gui=False):
+def run_recorder(q, interrupt_event, simulator, idx, gui=False):
     task = threading.Thread(target=interrupt_handler, args=(interrupt_event,))
     task.start()
     simulator = "webots" if simulator == "webots" else "gazebo"
     try:
         if gui:
-            proc_monitor_gui.run(simulator)  # launch recording
+            proc_monitor_gui.run(simulator, idx=idx)  # launch recording
         else:
-            proc_monitor.run(simulator)
+            proc_monitor.run(simulator,idx=idx)
     except:
         q.put("Exit")
 
 
-def generate_procs(simulator, commands, r, w, q, interrupt_event):
+def generate_procs(simulator, commands, r, w, q, interrupt_event, idx):
     procs = []
     for com in commands:
         procs.append(Process(target=run_com, args=(w, q, com)))
     procs.append(Process(target=run_recorder, args=(
-        q, interrupt_event, simulator), daemon=True))
+        q, interrupt_event, simulator, idx), daemon=True))
     return procs
 
 
 def start_proces(delay, procs, q):
     pids = []
+    delay.append(0)  # Otherwise out of range
     delay.append(0)  # Otherwise out of range
     for idx, p in enumerate(procs):
         p.start()
@@ -86,7 +86,7 @@ class Webots():
             "ros2 launch webots_simple_arm pick_place.launch.py",
             "ros2 launch webots_simple_arm moveit_webots.launch.py",
         ]
-        self.delays = [10]
+        self.delays = [7]
 class Gazebo():
     def __init__(self):
         self.name = "gazebo"
@@ -97,6 +97,34 @@ class Gazebo():
         ]
         self.delays = [5, 10, 0]
 
+def handler(signum, frame):
+    raise Exception("TimeOut")
+
+def run(sim, idx):
+    r, w = Pipe()
+    q = Queue()
+    reader = os.fdopen(r.fileno(), 'r')
+    interrupt_event = Event()
+    procs = generate_procs(sim.name, sim.commands, r, w, q, interrupt_event, idx)
+    time.sleep(1)
+    pids = start_proces(sim.delays, procs, q)
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(60)
+    with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/{idx}.txt", "w") as f:
+        try:    
+            while True:
+                text = reader.readline()
+                f.write(text)
+                if "Task completed Succesfully" in text:
+                    print(f"Completed for {idx}")
+                    signal.alarm(0)
+                    kill_proc_tree(pids, procs, interrupt_event)
+                    return
+        except:
+            print(f"Timeout for {idx}")
+            f.write("Timeout")
+            kill_proc_tree(pids, procs, interrupt_event)
+            return
 
 def main(args=None):
     if len(sys.argv) == 1 or sys.argv[1] == "webots":
@@ -104,24 +132,15 @@ def main(args=None):
     else:
         sim = Gazebo()
 
-    r, w = Pipe()
-    q = Queue()
-    reader = os.fdopen(r.fileno(), 'r')
-    interrupt_event = Event()
-    procs = generate_procs(sim.name, sim.commands, r, w, q, interrupt_event)
-    pids = start_proces(sim.delays, procs, q)
-    signal.signal(signal.SIGALRM, lambda x: print("Timeout"))
-    signal.alarm(60)
-    with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/out.txt", "w") as f:
-        while True:
-            text = reader.readline()
-            f.write(text)
-            if "Task completed Succesfully" in text:
-                print("Completed")
-                signal.alarm(0)
-                kill_proc_tree(pids, procs, interrupt_event)
-                if q.get() == "Exit":
-                    sys.exit(0)
+    if len(sys.argv) == 3:
+        iteration = int(sys.argv[2])
+    else:
+        iteration = 1
+
+    for idx in range(iteration):
+        run(sim, idx)
+
+
 
 if __name__ == "__main__":
     main()

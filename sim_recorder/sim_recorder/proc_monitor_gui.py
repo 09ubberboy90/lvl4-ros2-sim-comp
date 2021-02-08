@@ -17,10 +17,11 @@ class ProcMonitorGui(QMainWindow):
     Create the main window and connect the menu bar slots.
     """
 
-    def __init__(self, app=None, allowed=None):
+    def __init__(self, app=None, allowed=None, idx=0):
         super(ProcMonitorGui, self).__init__()
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
+        self._ui.graph.idx = idx
         if allowed is not None:
             self.procs = [(proc.name(), proc)
                           for proc in psutil.process_iter() if proc.name() in allowed]

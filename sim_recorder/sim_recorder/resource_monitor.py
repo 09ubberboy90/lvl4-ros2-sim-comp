@@ -13,6 +13,7 @@ import sys, os
 class CpuFreqGraph(FigureCanvas, FuncAnimation):
     def __init__(self, parent=None):
         self._fig = Figure()
+        self.idx = 0
         self.ax1 = self._fig.add_subplot(211)
         self.procs = []
         self.ax2 = self._fig.add_subplot(212)
@@ -109,9 +110,9 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
             p.cpu_percent() # <- Return a 0 that should be ignored
 
     def dump_values(self):
-        with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu_out.csv", "w") as f:
+        with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu_{self.idx}.csv", "w") as f:
             for (name, pid), el in self.cpu_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
-        with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/ram_out.csv", "w") as f:
+        with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/ram_{self.idx}.csv", "w") as f:
             for (name, pid), el in self.ram_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
