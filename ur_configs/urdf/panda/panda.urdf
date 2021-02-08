@@ -220,4 +220,19 @@
         <axis xyz="0 -1 0" />
         <limit effort="20" lower="0.0" upper="0.04" velocity="0.2" />
     </joint>
+    <link name="base_link"/>
+    <joint name="panda_to_world" type="fixed">
+      <parent link="base_link"/>
+      <child link="world"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <dynamics damping="1.0"/>
+    </joint>
+    <link name="world"/>
+    <joint name="world_to_base" type="fixed">
+      <parent link="world"/>
+      <child link="panda_link0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <dynamics damping="1.0"/>
+    </joint>
+  
 </robot>

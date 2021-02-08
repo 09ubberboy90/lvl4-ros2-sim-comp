@@ -17,7 +17,7 @@ import threading
 import _thread
 
 
-def kill_proc_tree(pids, procs, including_parent=False):
+def kill_proc_tree(pids, procs,interrupt_event, including_parent=False):
     interrupt_event.set()
     for pid in pids:
         try:
@@ -66,7 +66,7 @@ def generate_procs(simulator, commands, r, w, q, interrupt_event):
     return procs
 
 
-def start_proces(delay, procs):
+def start_proces(delay, procs, q):
     pids = []
     delay.append(0)  # Otherwise out of range
     for idx, p in enumerate(procs):
@@ -83,11 +83,10 @@ class Webots():
     def __init__(self):
         self.name = "webots"
         self.commands = [
-            "ros2 launch run_move_group run_move_group.launch.py",
-            "ros2 launch webots_simple_arm panda_trajectory.launch.py",
+            "ros2 launch webots_simple_arm pick_place.launch.py",
             "ros2 launch webots_simple_arm moveit_webots.launch.py",
         ]
-        self.delays = [5, 7, 0]
+        self.delays = [10]
 class Gazebo():
     def __init__(self):
         self.name = "gazebo"
@@ -110,14 +109,17 @@ def main(args=None):
     reader = os.fdopen(r.fileno(), 'r')
     interrupt_event = Event()
     procs = generate_procs(sim.name, sim.commands, r, w, q, interrupt_event)
-    pids = start_proces(sim.delays, procs)
+    pids = start_proces(sim.delays, procs, q)
+    signal.signal(signal.SIGALRM, lambda x: print("Timeout"))
+    signal.alarm(60)
     with open("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/out.txt", "w") as f:
         while True:
             text = reader.readline()
             f.write(text)
-            if "Plan and Execute request complete!" in text or "Goal Succeeded" in text:
+            if "Task completed Succesfully" in text:
                 print("Completed")
-                kill_proc_tree(pids, procs)
+                signal.alarm(0)
+                kill_proc_tree(pids, procs, interrupt_event)
                 if q.get() == "Exit":
                     sys.exit(0)
 

@@ -39,7 +39,6 @@ bool ActionServer::execute_plan(trajectory_msgs::msg::JointTrajectory trajectory
         RCLCPP_ERROR(this->get_logger(), "send goal call failed :(");
         return false;
     }
-    RCLCPP_INFO(this->get_logger(), "send goal call ok :)");
 
     rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr
         goal_handle = goal_handle_future.get();
@@ -72,12 +71,10 @@ void ActionServer::common_goal_response(
     if (!goal_handle)
     {
         common_goal_accepted = false;
-        RCLCPP_INFO(this->get_logger(), "Goal rejected");
     }
     else
     {
         common_goal_accepted = true;
-        RCLCPP_INFO(this->get_logger(), "Goal accepted");
     }
 }
 
