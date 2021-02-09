@@ -50,6 +50,7 @@ def generate_launch_description():
                             parameters=[robot_description,
                                         robot_description_semantic,
                                         kinematics_yaml,
-                                        {"use_spawn_obj": True}])
+                                        {"use_spawn_obj": True},
+                                        {"gazebo": False}])
 
     return LaunchDescription([webots_spawner, moveit_collision])

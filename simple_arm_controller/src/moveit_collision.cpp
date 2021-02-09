@@ -88,19 +88,18 @@ int main(int argc, char **argv)
                 obj.operation = obj.ADD;
                 if (i == 0) // table
                 {
-                    primitive.dimensions[0] = 0.914;
+                    primitive.dimensions[0] = 0.92;
                     if (gazebo)
                     {
                         primitive.dimensions[2] = 0.5;
-                        primitive.dimensions[1] = 0.914;
-                        pose.position.z += primitive.dimensions[2] / 2;
+                        primitive.dimensions[1] = 0.92;
                     }
                     else
                     {
                         primitive.dimensions[1] = 0.5;
                         primitive.dimensions[2] = 0.914;
-                        pose.position.z += primitive.dimensions[1] / 2;
                     }
+                    pose.position.z += primitive.dimensions[1] / 2;
                     
                     
                 }
