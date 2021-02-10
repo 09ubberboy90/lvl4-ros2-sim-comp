@@ -6,6 +6,7 @@ WorldInfo {
   title "VrController"
   basicTimeStep 16
   physicsDisableAngularThreshold 0.1
+  optimalThreadCount 10
   contactProperties [
     ContactProperties {
       bounce 0.1

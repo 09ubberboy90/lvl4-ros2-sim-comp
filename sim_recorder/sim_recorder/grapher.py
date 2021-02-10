@@ -22,7 +22,7 @@ for el in tmp:
         types["cpu"].append(el)
 print(types)
 
-fig, axs = plt.subplots(2, )
+fig, axs = plt.subplots(2,figsize=(12,7.5) )
 
 procs = defaultdict(lambda: defaultdict(list))
 
@@ -70,5 +70,5 @@ for axs, (type, proc) in zip(axs, procs.items()):
             axs.set_title("CPU usage against time")
             axs.set_ylabel("CPU Usage (% of one core)")
         axs.legend(bbox_to_anchor=(1,1), loc="upper left")
-plt.subplots_adjust(left=0.05, right=0.75)
-plt.show()
+plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
+plt.savefig(os.path.join(os.path.dirname(__file__),"../data/pick_place.png"))

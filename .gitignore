@@ -43,7 +43,7 @@ qtcreator-*
 /planning/cfg
 /planning/docs
 /planning/src
-
+*.png
 *~
 # Webots
 *.wbproj
