@@ -83,7 +83,7 @@ class CpuFreqGraph(FigureCanvas, FuncAnimation):
                 self.x_data, cpu_stack[idx, :], cpu_stack[idx+1, :], color=color, label=labels[idx])
             ram = self.ax2.fill_between(
                 self.x_data, ram_stack[idx, :], ram_stack[idx+1, :], color=color, label=labels[idx])
-            handle_cpu.append((cpu, cpu_stack[idx+1, -1] - ram_stack[idx, -1]))
+            handle_cpu.append((cpu, cpu_stack[idx+1, -1] - cpu_stack[idx, -1]))
             handle_ram.append((ram, ram_stack[idx+1, -1] - ram_stack[idx, -1]))
 
         if self.procs:
