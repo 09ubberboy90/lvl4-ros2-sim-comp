@@ -13,14 +13,12 @@ for (dirpath, dirnames, filenames) in walk(os.path.join(os.path.dirname(__file__
     f.extend([os.path.join(*dirpath.split("/"), s) for s in filenames])
 #tmp = [el for el in f if el[-5:] == "ipynb"]
 tmp = [el for el in f if el[-3:] == "csv"]
-print(tmp)
 types = defaultdict(list)
 for el in tmp:
     if "ram" in el:
         types["ram"].append(el)
     else:
         types["cpu"].append(el)
-print(types)
 
 fig, axs = plt.subplots(2,figsize=(12,7.5) )
 
@@ -52,7 +50,6 @@ for axs, (type, proc) in zip(axs, procs.items()):
 
         mean = np.nanmean(arr, axis=0)
         standard_dev = np.std(arr, axis=0)
-        print(name, standard_dev)
         x = np.arange(0, mean.shape[0],1)/10 # because recording every 100 ms
         xnew = np.linspace(x.min(), x.max(), mean.shape[0]*10) 
 
@@ -61,7 +58,7 @@ for axs, (type, proc) in zip(axs, procs.items()):
         #axs.plot(x, mean, label=name)
         axs.plot(xnew, mean_smooth, label=name)
 
-        axs.fill_between(x, mean-standard_dev, mean+standard_dev, alpha = 0.5, interpolate=True)
+        #axs.fill_between(x, mean-standard_dev, mean+standard_dev, alpha = 0.5, interpolate=True)
         axs.set_xlabel("Time (s)")
         if type == "ram":
             axs.set_ylabel("RAM usage (Mb)")

@@ -42,7 +42,8 @@ def generate_launch_description():
         'moveit_resources_panda_moveit_config', 'config/kinematics.yaml')
 
     # MoveGroupInterface demo executable
-    run_move_group_demo = Node(package='simple_arm_control',
+    run_move_group_demo = Node(name='move_arm',
+                               package='simple_arm_control',
                                executable='moveit_controller',
                                output='screen',
                                parameters=[robot_description,
@@ -51,4 +52,14 @@ def generate_launch_description():
                                            {"action_node_name": "/arm_controller/follow_joint_trajectory"},
                                            {"use_spawn_obj": True}])
 
-    return LaunchDescription([run_move_group_demo])
+    run_move_hand = Node(name='move_hand',
+                         package='simple_arm_control',
+                         executable='moveit_controller',
+                         output='screen',
+                         parameters=[robot_description,
+                                     robot_description_semantic,
+                                     kinematics_yaml,
+                                     {"action_node_name": "/hand_controller/follow_joint_trajectory"},
+                                     {"use_spawn_obj": False}])
+
+    return LaunchDescription([run_move_group_demo, run_move_hand])
