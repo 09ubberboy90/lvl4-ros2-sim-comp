@@ -1,11 +1,12 @@
 import sys
-import time
+from datetime import datetime
+from numpy.lib.function_base import vectorize
 import openvr
 from simple_arm import utils
-from pyquaternion import Quaternion
+import pyquaternion as pyq
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Pose, Point, Quaternion
+from geometry_msgs.msg import Pose, Point, Quaternion, Twist, Vector3
 from collections import defaultdict 
 
 
@@ -49,10 +50,10 @@ class VrPublisher(Node):
         self.system = openvr_system
         self.poses = []
         self.publishers_dict = {}
-        self.prev_time = time.time.now()
+        self.prev_time = datetime.now()
         self.point = None
-        self.velocity = Point()
-        self.ang_velocity = Point()
+        self.velocity = Vector3()
+        self.ang_velocity = Vector3()
         self.rot = None
         self.buttons = buttons
 
@@ -88,7 +89,7 @@ class VrPublisher(Node):
         for key, device in self.devices.items():
             for idx, (name, el) in enumerate(device):
                 if key == "controller":
-                    result, pControllerState = self.system.getControllerState(el)
+                    result, pControllerState = self.system.getControllerState(idx)
                     d = from_controller_state_to_dict(pControllerState)
                     if self.buttons:
                         print(d)
@@ -98,13 +99,14 @@ class VrPublisher(Node):
                 point.x = pose[0][0]
                 point.y = pose[0][1]
                 point.z = pose[0][2]    
-                time = time.time.now()
-                dtime = (time-self.time)
-                if point is not None:
+                time = datetime.now()
+                dtime = (time-self.prev_time).total_seconds()
+                if self.point is not None:
                     self.velocity.x = (point.x - self.point.x) / dtime
                     self.velocity.y = (point.y - self.point.y)/ dtime
                     self.velocity.z = (point.z - self.point.z)/ dtime
-                    print(self.velocity.x, self.velocity.y, self.velocity.z)
+                    if name == "RightHand":
+                        print(self.velocity.x, self.velocity.y, self.velocity.z)
                 self.point = point
 
 
@@ -115,13 +117,13 @@ class VrPublisher(Node):
                 rot.z = pose[1][2]
                 rot.w = pose[1][3]
 
-                q1 = Quaternion(pose[1])
-                if rot is not None:
+                q1 = pyq.Quaternion(pose[1])
+                if self.rot is not None:
                     diffQuater = q1 - self.rot
                     conjBoxQuater = q1.inverse
                     velQuater = ((diffQuater * 2.0) / dtime) * conjBoxQuater
-                    self.ang_velocity = velQuater
-                    print(self.ang_velocity)
+                    #self.ang_velocity = velQuater
+                    #print(self.ang_velocity)
                 self.rot = q1
                 
                 msg = Pose()   
@@ -132,7 +134,19 @@ class VrPublisher(Node):
                 if pub is None:
                     pub = self.create_publisher(Pose, name, 10)
                     self.publishers_dict[name] = pub
-                pub.publish(msg)
+                pub.publish(msg)                
+
+                vel = Twist()
+                vel.linear = self.velocity
+                vel.angular = self.ang_velocity
+
+                name = f"{key}/{name}_vel"
+                pub = self.publishers_dict.get(name)
+                if pub is None:
+                    pub = self.create_publisher(Twist, name, 10)
+                    self.publishers_dict[name] = pub
+                pub.publish(vel)
+
 
 
 def main(buttons= False , args=None):
