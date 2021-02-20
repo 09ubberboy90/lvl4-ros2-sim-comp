@@ -92,7 +92,7 @@ class Gazebo():
         self.name = "gazebo"
         self.commands = [
             "ros2 launch simple_arm gazebo.launch.py",
-            "ros2 launch run_move_group run_move_group.launch.py",
+            "ros2 launch simple_move_group run_move_group.launch.py",
             "ros2 launch simple_arm collision_gazebo.launch.py",
             "ros2 launch simple_arm moveit_gazebo.launch.py",
         ]
@@ -111,21 +111,26 @@ def run(sim, idx):
     pids = start_proces(sim.delays, procs, q)
     signal.signal(signal.SIGALRM, handler)
     signal.alarm(60)
-    with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/{idx}.txt", "w") as f:
+    with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/log/{idx}.txt", "w") as f,\
+         open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt", "w") as out:
         try:    
             while True:
                 text = reader.readline()
                 f.write(text)
                 if "Task completed Succesfully" in text:
                     print(f"Completed for {idx}")
+                    out.write(f"Completed for {idx}")
                     signal.alarm(0)
                     kill_proc_tree(pids, procs, interrupt_event)
                     return
         except:
             print(f"Timeout for {idx}")
+            out.write(f"Timeout for {idx}")
             f.write("Timeout")
             kill_proc_tree(pids, procs, interrupt_event)
-            return
+    time.sleep(2) # Wait for everything ot close to prevent broken_pipe
+
+            
 
 def main(args=None):
     if len(sys.argv) == 1 or sys.argv[1] == "webots":

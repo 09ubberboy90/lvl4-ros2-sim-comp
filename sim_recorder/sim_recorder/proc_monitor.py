@@ -40,10 +40,10 @@ class ProcMonitor(Node):
 
     def dump_values(self):
         path = os.path.join(self.package_share_directory, "data")
-        with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu_{self.idx}.csv", "w") as f:
+        with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu/cpu_{self.idx}.csv", "w") as f:
             for (name, pid), el in self.cpu_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
-        with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/ram_{self.idx}.csv", "w") as f:
+        with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/ram/ram_{self.idx}.csv", "w") as f:
             for (name, pid), el in self.ram_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
         sys.exit(0)
