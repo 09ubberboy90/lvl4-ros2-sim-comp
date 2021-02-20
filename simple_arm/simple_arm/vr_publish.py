@@ -94,9 +94,10 @@ class VrPublisher(Node):
                 if key == "controller":
                     result, pControllerState = self.system.getControllerState(
                         idx)
-                    d = from_controller_state_to_dict(pControllerState)
-                    if self.buttons:
-                        print(d)
+                    if result:
+                        d = from_controller_state_to_dict(pControllerState)
+                        if self.buttons:
+                            print(d)
                 pose = utils.convert_to_quaternion(
                     el.mDeviceToAbsoluteTracking)
                 point = Point()
