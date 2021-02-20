@@ -7,10 +7,10 @@ import pyquaternion as pyq
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose, Point, Quaternion, Twist, Vector3
-from collections import defaultdict 
+from collections import defaultdict
 
+# https: // gist.github.com/awesomebytes/75daab3adb62b331f21ecf3a03b3ab46
 
-## https: // gist.github.com/awesomebytes/75daab3adb62b331f21ecf3a03b3ab46
 
 def from_controller_state_to_dict(pControllerState):
     # docs: https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetControllerState
@@ -40,6 +40,7 @@ def from_controller_state_to_dict(pControllerState):
     # the controllers stop reporting
     return d
 
+
 class VrPublisher(Node):
 
     def __init__(self, openvr_system, buttons=False):
@@ -58,7 +59,8 @@ class VrPublisher(Node):
         self.buttons = buttons
 
     def timer_callback(self):
-        self.poses = self.system.getDeviceToAbsoluteTrackingPose(openvr.TrackingUniverseStanding,0,self.poses)
+        self.poses = self.system.getDeviceToAbsoluteTrackingPose(
+            openvr.TrackingUniverseStanding, 0, self.poses)
         ########
         # # ETrackedDeviceClass = ENUM_TYPE
         # # TrackedDeviceClass_Invalid = ENUM_VALUE_TYPE(0)
@@ -69,19 +71,20 @@ class VrPublisher(Node):
         # # TrackedDeviceClass_DisplayRedirect = ENUM_VALUE_TYPE(5)
         # # TrackedDeviceClass_Max = ENUM_VALUE_TYPE(6)
         ########
-       	# # TrackedControllerRole_LeftHand = 1,					// Tracked device associated with the left hand
+        # # TrackedControllerRole_LeftHand = 1,					// Tracked device associated with the left hand
         # # TrackedControllerRole_RightHand = 2,				// Tracked device associated with the right hand
         ########
         for idx, controller in enumerate(self.poses):
-            ## Needed as the order of the devices may change ( based on which thing got turned on first)
+            # Needed as the order of the devices may change ( based on which thing got turned on first)
             if not self.system.isTrackedDeviceConnected(idx):
                 continue
             if self.system.getTrackedDeviceClass(idx) == 1 and len(self.devices["hmd"]) <= 1:
                 self.devices["hmd"].append(("hmd", controller))
             elif self.system.getTrackedDeviceClass(idx) == 2 and len(self.devices["controller"]) <= 2:
-                controller_role = self.system.getControllerRoleForTrackedDeviceIndex(idx)
+                controller_role = self.system.getControllerRoleForTrackedDeviceIndex(
+                    idx)
                 hand = ""
-                if (controller_role ==1):
+                if (controller_role == 1):
                     hand = "LeftHand"
                 if controller_role == 2:
                     hand = "RightHand"
@@ -89,27 +92,24 @@ class VrPublisher(Node):
         for key, device in self.devices.items():
             for idx, (name, el) in enumerate(device):
                 if key == "controller":
-                    result, pControllerState = self.system.getControllerState(idx)
+                    result, pControllerState = self.system.getControllerState(
+                        idx)
                     d = from_controller_state_to_dict(pControllerState)
                     if self.buttons:
                         print(d)
-
-                pose = utils.convert_to_quaternion(el.mDeviceToAbsoluteTracking)
+                pose = utils.convert_to_quaternion(
+                    el.mDeviceToAbsoluteTracking)
                 point = Point()
                 point.x = pose[0][0]
                 point.y = pose[0][1]
-                point.z = pose[0][2]    
+                point.z = pose[0][2]
                 time = datetime.now()
                 dtime = (time-self.prev_time).total_seconds()
                 if self.point is not None:
                     self.velocity.x = (point.x - self.point.x) / dtime
-                    self.velocity.y = (point.y - self.point.y)/ dtime
-                    self.velocity.z = (point.z - self.point.z)/ dtime
-                    if name == "RightHand":
-                        print(self.velocity.x, self.velocity.y, self.velocity.z)
+                    self.velocity.y = (point.y - self.point.y) / dtime
+                    self.velocity.z = (point.z - self.point.z) / dtime
                 self.point = point
-
-
 
                 rot = Quaternion()
                 rot.x = pose[1][0]
@@ -122,11 +122,13 @@ class VrPublisher(Node):
                     diffQuater = q1 - self.rot
                     conjBoxQuater = q1.inverse
                     velQuater = ((diffQuater * 2.0) / dtime) * conjBoxQuater
-                    #self.ang_velocity = velQuater
-                    #print(self.ang_velocity)
+                    self.ang_velocity.x = velQuater[0]
+                    self.ang_velocity.y = velQuater[1]
+                    self.ang_velocity.z = velQuater[2]
+                    # print(self.ang_velocity)
                 self.rot = q1
-                
-                msg = Pose()   
+
+                msg = Pose()
                 msg.orientation = rot
                 msg.position = point
                 name = f"{key}/{name}"
@@ -134,13 +136,16 @@ class VrPublisher(Node):
                 if pub is None:
                     pub = self.create_publisher(Pose, name, 10)
                     self.publishers_dict[name] = pub
-                pub.publish(msg)                
+                pub.publish(msg)
 
                 vel = Twist()
+                if self.velocity.x == 0.0 and self.velocity.y == 0.0 and self.velocity.z == 0.0 and \
+                        self.ang_velocity.x == 0.0 and self.ang_velocity.y == 0.0 and self.ang_velocity.z == 0.0:
+                    continue
                 vel.linear = self.velocity
                 vel.angular = self.ang_velocity
 
-                name = f"{key}/{name}_vel"
+                name += "_vel"
                 pub = self.publishers_dict.get(name)
                 if pub is None:
                     pub = self.create_publisher(Twist, name, 10)
@@ -148,12 +153,12 @@ class VrPublisher(Node):
                 pub.publish(vel)
 
 
-
-def main(buttons= False , args=None):
+def main(buttons=False, args=None):
     if not openvr.isRuntimeInstalled:
         raise RuntimeError("OpenVR / SteamVr is not Installed Exit")
     if not openvr.isHmdPresent():
-        raise RuntimeError("SteamVr is not running or Headmount is not plugged in")
+        raise RuntimeError(
+            "SteamVr is not running or Headmount is not plugged in")
 
     rclpy.init(args=args)
     system = openvr.init(openvr.VRApplication_Scene)
@@ -164,7 +169,7 @@ def main(buttons= False , args=None):
 
     minimal_publisher.destroy_node()
     rclpy.shutdown()
-    openvr.shutdown()    
+    openvr.shutdown()
 
 
 if __name__ == '__main__':
