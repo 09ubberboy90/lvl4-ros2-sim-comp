@@ -91,7 +91,7 @@ int main(int argc, char **argv)
                     primitive.dimensions[0] = 0.92;
                     if (gazebo)
                     {
-                        primitive.dimensions[2] = 0.5;
+                        primitive.dimensions[2] = 0.58;
                         primitive.dimensions[1] = 0.92;
                     }
                     else

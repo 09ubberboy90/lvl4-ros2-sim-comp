@@ -50,16 +50,6 @@ def generate_launch_description():
                                            robot_description_semantic,
                                            kinematics_yaml,
                                            {"action_node_name": "/arm_controller/follow_joint_trajectory"},
-                                           {"use_spawn_obj": True}])
+                                           {"use_spawn_obj": True},{"gazebo": True}])
 
-    run_move_hand = Node(name='move_hand',
-                         package='simple_arm_control',
-                         executable='moveit_controller',
-                         output='screen',
-                         parameters=[robot_description,
-                                     robot_description_semantic,
-                                     kinematics_yaml,
-                                     {"action_node_name": "/hand_controller/follow_joint_trajectory"},
-                                     {"use_spawn_obj": False}])
-
-    return LaunchDescription([run_move_group_demo, run_move_hand])
+    return LaunchDescription([run_move_group_demo])

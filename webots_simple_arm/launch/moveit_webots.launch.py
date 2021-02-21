@@ -46,6 +46,6 @@ def generate_launch_description():
                                            robot_description_semantic,
                                            kinematics_yaml,
                                            {"action_node_name": "/follow_joint_trajectory"},
-                                           {"use_spawn_obj": True}])
+                                           {"use_spawn_obj": True},{"gazebo": False}])
     
     return LaunchDescription([run_move_group_demo])

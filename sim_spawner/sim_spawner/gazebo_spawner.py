@@ -268,10 +268,10 @@ def main(args=None):
     rclpy.init()
     table_spawner = ObjectSpawner(reference_frame="world",
                                   model_name="cafe_table")
-    table_spawner.spawn_model(Pose(position=Point(x=0.6, y=0.0, z=-0.45)))
+    table_spawner.spawn_model(Pose(position=Point(x=0.6, y=0.0, z=-0.35)))
     block_spawner = ObjectSpawner(reference_frame="world",
                                 model_name="wood_cube_5cm")
-    block_spawner.spawn_model(Pose(position=Point(x=0.2, y=0.0, z=0.55)))
+    block_spawner.spawn_model(Pose(position=Point(x=0.2, y=0.0, z=0.65)))
     
 
     rclpy.shutdown()
