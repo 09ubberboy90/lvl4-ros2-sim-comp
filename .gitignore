@@ -55,6 +55,8 @@ qtcreator-*
 CATKIN_IGNORE
 
 *.csv
+*.csv_old
+*.svg
 #Python
 
 **/__init__.py

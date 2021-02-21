@@ -5,6 +5,10 @@ import re
 from collections import defaultdict
 import numpy as np
 from scipy.interpolate import make_interp_spline, BSpline
+# import matplotlib.colors as mcolors
+# import random
+from matplotlib import cm
+from numpy import linspace
 
 f = []
 exclude = []
@@ -42,9 +46,19 @@ for key,el in types.items():
                     p = p+"_"+str(counter)
                 procs[key][p].append(val)
                 existing.append(p)
-        
+# colors = {}
+# colors.update(mcolors.TABLEAU_COLORS)
+# colors.update(mcolors.BASE_COLORS)
+# colors.update(mcolors.CSS4_COLORS)
+# colors = list(colors.values())
+# random.shuffle(colors)
+
+
 for axs, (type, proc) in zip(axs, procs.items()):
-    for name, ls in proc.items():
+    cm_subsection = linspace(0, 1, len(proc.values())) 
+    colors = [ cm.nipy_spectral(x) for x in cm_subsection ]
+    #colors.reverse()
+    for color, (name, ls) in zip(colors, proc.items()):
         length = max(map(len, ls))
         arr=np.array([xi+[np.nan]*(length-len(xi)) for xi in ls])
 
@@ -56,7 +70,7 @@ for axs, (type, proc) in zip(axs, procs.items()):
         spl = make_interp_spline(x, mean, k=3)  # type: BSpline
         mean_smooth = spl(xnew)
         #axs.plot(x, mean, label=name)
-        axs.plot(xnew, mean_smooth, label=name)
+        axs.plot(xnew, mean_smooth, label=name, color=color)
 
         #axs.fill_between(x, mean-standard_dev, mean+standard_dev, alpha = 0.5, interpolate=True)
         axs.set_xlabel("Time (s)")
@@ -68,4 +82,4 @@ for axs, (type, proc) in zip(axs, procs.items()):
             axs.set_ylabel("CPU Usage (% of one core)")
         axs.legend(bbox_to_anchor=(1,1), loc="upper left")
 plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
-plt.savefig(os.path.join(os.path.dirname(__file__),"../data/pick_place.png"))
+plt.savefig(os.path.join(os.path.dirname(__file__),"../data/pick_place.svg"))
