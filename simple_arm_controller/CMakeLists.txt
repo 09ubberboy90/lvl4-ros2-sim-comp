@@ -26,6 +26,7 @@ find_package(sim_action_server REQUIRED)
 find_package(simple_interface REQUIRED)
 find_package(ignition-transport9 REQUIRED)
 find_package(gazebo_msgs REQUIRED)
+find_package(moveit_servo REQUIRED)
 install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
 )
@@ -58,6 +59,7 @@ ament_target_dependencies(vr_controller
   control_msgs
   moveit_ros_planning_interface
   sim_action_server
+  moveit_servo
 )
 add_executable(ign_controller src/ign_controller.cpp)
 ament_target_dependencies(ign_controller
