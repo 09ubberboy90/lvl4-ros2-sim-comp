@@ -23,7 +23,6 @@
 
 #include "control_msgs/action/follow_joint_trajectory.hpp"
 #include "sim_action_server.hpp"
-#include "simple_interface/srv/get_poses.hpp"
 
 #include "gazebo_msgs/srv/get_entity_state.hpp"
 #include "gazebo_msgs/srv/get_model_list.hpp"
