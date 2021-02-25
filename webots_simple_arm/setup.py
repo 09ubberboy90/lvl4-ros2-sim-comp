@@ -15,6 +15,7 @@ launchers = [
     'launch/moveit_webots.launch.py',
     'launch/collision_webots.launch.py',
     'launch/pick_place.launch.py',
+    'launch/vr_webots.launch.py',
 ]
 
 data_files = []

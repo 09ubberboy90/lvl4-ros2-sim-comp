@@ -56,7 +56,6 @@ ament_target_dependencies(vr_controller
   control_msgs
   moveit_ros_planning_interface
   sim_action_server
-  moveit_servo
 )
 add_executable(ign_controller src/ign_controller.cpp)
 ament_target_dependencies(ign_controller
