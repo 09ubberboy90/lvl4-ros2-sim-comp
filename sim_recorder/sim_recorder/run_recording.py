@@ -27,7 +27,8 @@ def kill_proc_tree(pids, procs,interrupt_event, including_parent=False):
             if including_parent:
                 parent.kill()
         except:
-            print("Unkown Pid : " + str(pid))
+            pass
+    time.sleep(2) # Wait for everything ot close to prevent broken_pipe
     for proc in procs[:-1]:
         proc.kill()
 
@@ -96,7 +97,7 @@ class Gazebo():
             "ros2 launch simple_arm collision_gazebo.launch.py",
             "ros2 launch simple_arm moveit_gazebo.launch.py",
         ]
-        self.delays = [5, 10, 5]
+        self.delays = [5, 5, 5]
 
 def handler(signum, frame):
     raise Exception("TimeOut")
@@ -110,7 +111,7 @@ def run(sim, idx):
     time.sleep(1)
     pids = start_proces(sim.delays, procs, q)
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(60)
+    signal.alarm(65)
     with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/log/{idx}.txt", "w") as f,\
          open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt", "w") as out:
         try:    
@@ -123,12 +124,17 @@ def run(sim, idx):
                     signal.alarm(0)
                     kill_proc_tree(pids, procs, interrupt_event)
                     return
+                if "Cube is not in bound" in text:
+                    print(f"Failed for {idx}")
+                    out.write(f"Failed for {idx}")
+                    signal.alarm(0)
+                    kill_proc_tree(pids, procs, interrupt_event)
+                    return
         except:
             print(f"Timeout for {idx}")
             out.write(f"Timeout for {idx}")
             f.write("Timeout")
             kill_proc_tree(pids, procs, interrupt_event)
-    time.sleep(2) # Wait for everything ot close to prevent broken_pipe
 
             
 

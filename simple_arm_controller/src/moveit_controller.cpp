@@ -118,8 +118,14 @@ int main(int argc, char **argv)
     // auto node_name = action_node_name;
     // std::replace(node_name.begin(),node_name.end(), '/', '_');
     // auto server = std::make_shared<sim_action_server::ActionServer>(node_name.substr(1)+"_node", action_node_name);
+    std::shared_ptr<sim_action_server::ActionServer> hand_server;
 
     auto server = std::make_shared<sim_action_server::ActionServer>("trajectory_control", action_node_name);
+    if (gazebo)
+    {
+        hand_server = std::make_shared<sim_action_server::ActionServer>("trajectory_control", "/hand_controller/follow_joint_trajectory");
+    }
+
     // Planning to a Pose goal
 
     if (use_spawn_obj)
@@ -127,7 +133,16 @@ int main(int argc, char **argv)
         auto start_pose = move_group.getCurrentPose().pose;
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
-        change_gripper(&hand_move_group, server, gripper_state::opened);
+        if (gazebo)
+        {
+            change_gripper(&hand_move_group, hand_server, gripper_state::opened);
+            change_gripper(&hand_move_group, hand_server, gripper_state::closed); // fix gripper slightly to left
+            change_gripper(&hand_move_group, hand_server, gripper_state::opened);
+        }
+        else
+        {
+            change_gripper(&hand_move_group, server, gripper_state::opened);
+        }
 
         std::vector<std::string> targets = {"target"};
         auto collision_objects = planning_scene_interface.getObjects(targets);
@@ -137,7 +152,7 @@ int main(int argc, char **argv)
 
         if (gazebo)
         {
-            pose.position.z += 0.2;
+            pose.position.z += 0.13;
         }
         else
         {
@@ -157,8 +172,14 @@ int main(int argc, char **argv)
         planning_scene_interface.applyCollisionObject(collision_object);
         std::this_thread::sleep_for(std::chrono::seconds(1));
         //move_group.attachObject("target");
-        change_gripper(&hand_move_group, server, gripper_state::closed);
-
+        if (gazebo)
+        {
+            change_gripper(&hand_move_group, hand_server, gripper_state::closed);
+        }
+        else
+        {
+            change_gripper(&hand_move_group, server, gripper_state::closed);
+        }
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lifting");
         pose.position.z += 0.1;
         goto_pose(&move_group, server, pose);
@@ -172,7 +193,15 @@ int main(int argc, char **argv)
         // goto_pose(&move_group, server, pose);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
-        change_gripper(&hand_move_group, server, gripper_state::opened);
+        if (gazebo)
+        {
+            change_gripper(&hand_move_group, hand_server, gripper_state::opened);
+        }
+        else
+        {
+            change_gripper(&hand_move_group, server, gripper_state::opened);
+        }
+
         //move_group.detachObject("target");
         parameter_server->set_param(false);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
