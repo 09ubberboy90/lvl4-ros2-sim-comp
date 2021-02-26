@@ -7,6 +7,7 @@ import pyquaternion as pyq
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose, Point, Quaternion, Twist, Vector3
+from std_msgs.msg import Bool
 from collections import defaultdict
 
 # https: // gist.github.com/awesomebytes/75daab3adb62b331f21ecf3a03b3ab46
@@ -96,8 +97,11 @@ class VrPublisher(Node):
                         idx)
                     if result:
                         d = from_controller_state_to_dict(pControllerState)
-                        if self.buttons:
-                            print(d)
+                        name = f"{key}/{name}/trigger"
+                        msg = Bool()
+                        msg.data = d["trigger"] > 0.0
+                        self.publish(name, msg, Bool)
+
                 pose = utils.convert_to_quaternion(
                     el.mDeviceToAbsoluteTracking)
                 point = Point()
@@ -133,11 +137,7 @@ class VrPublisher(Node):
                 msg.orientation = rot
                 msg.position = point
                 name = f"{key}/{name}"
-                pub = self.publishers_dict.get(name)
-                if pub is None:
-                    pub = self.create_publisher(Pose, name, 10)
-                    self.publishers_dict[name] = pub
-                pub.publish(msg)
+                self.publish(name, msg, Pose)
 
                 vel = Twist()
                 if self.velocity.x == 0.0 and self.velocity.y == 0.0 and self.velocity.z == 0.0 and \
@@ -146,13 +146,14 @@ class VrPublisher(Node):
                 vel.linear = self.velocity
                 vel.angular = self.ang_velocity
 
-                name += "_vel"
-                pub = self.publishers_dict.get(name)
-                if pub is None:
-                    pub = self.create_publisher(Twist, name, 10)
-                    self.publishers_dict[name] = pub
-                pub.publish(vel)
-
+                name += "/vel"
+                self.publish(name, vel, Twist)
+    def publish(self, name, value, type):
+        pub = self.publishers_dict.get(name)
+        if pub is None:
+            pub = self.create_publisher(type, name, 10)
+            self.publishers_dict[name] = pub
+        pub.publish(value)
 
 def main(buttons=False, args=None):
     if not openvr.isRuntimeInstalled:
