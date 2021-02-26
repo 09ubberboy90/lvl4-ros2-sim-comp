@@ -20,8 +20,8 @@ bool wait_for_exec(moveit::planning_interface::MoveGroupInterface *move_group, s
 
         if (success)
         {
-            //std::thread([move_group, plan]() { move_group->execute(plan); }).detach();
-            move_group->asyncExecute(plan);
+            std::thread([move_group, plan]() { move_group->execute(plan); }).detach();
+            //move_group->asyncExecute(plan);
             return server->execute_plan(plan.trajectory_.joint_trajectory);
         }
     }
@@ -103,10 +103,6 @@ int main(int argc, char **argv)
     {
         // In case the parameter was not created use default
         gazebo = false;
-    }
-    else
-    {
-        auto server = std::make_shared<sim_action_server::ActionServer>("trajectory_control", "/hand_controller/follow_joint_trajectory");
     }
     bool use_spawn_obj;
     if (!move_group_node->get_parameter("use_spawn_obj", use_spawn_obj))
