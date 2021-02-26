@@ -111,7 +111,7 @@ def run(sim, idx):
     time.sleep(1)
     pids = start_proces(sim.delays, procs, q)
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(65)
+    signal.alarm(60)
     with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/log/{idx}.txt", "w") as f,\
          open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt", "w") as out:
         try:    

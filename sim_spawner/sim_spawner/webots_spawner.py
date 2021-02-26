@@ -28,7 +28,7 @@ class SpawnerNode(WebotsNode):
         self.model = self.create_service(
             GetModelList, 'get_model_list', self.get_model_list)
         self.objs = {}
-
+        self.robot.simulationSetMode(self.robot.SIMULATION_MODE_FAST)
         self.spawn_obj("worlds/Table.wbo", rotation = [1,0,0,1.57])
         self.spawn_obj("worlds/Cube.wbo", position = [0.3-0.6, 0, 0.55])
         # for x in range(-4, 5):

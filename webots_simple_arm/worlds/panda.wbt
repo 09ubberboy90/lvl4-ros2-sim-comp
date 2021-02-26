@@ -4,7 +4,7 @@ WorldInfo {
     "Simple Franka Panda robot simulation"
   ]
   title "VrController"
-  basicTimeStep 16
+  basicTimeStep 32
   physicsDisableAngularThreshold 0.1
   optimalThreadCount 10
   contactProperties [
