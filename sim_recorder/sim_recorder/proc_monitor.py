@@ -6,7 +6,6 @@ from collections import defaultdict
 
 import psutil
 import rclpy
-from ament_index_python.packages import get_package_share_directory
 from rclpy.node import Node
 
 
@@ -23,12 +22,10 @@ class ProcMonitor(Node):
         self.cpu_dict = defaultdict(list)
         self.ram_dict = defaultdict(list)
         self.timer = self.create_timer(0.1, self.animate)
-        self.package_share_directory = get_package_share_directory(
-            'sim_recorder')
         self.idx = idx
 
     def animate(self):
-        for idx, (name, p) in enumerate(self.procs):
+        for name, p in self.procs:
             try:
                 with p.oneshot():
                     cpu_usage = p.cpu_percent()
@@ -39,7 +36,6 @@ class ProcMonitor(Node):
                 pass
 
     def dump_values(self):
-        path = os.path.join(self.package_share_directory, "data")
         with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu/cpu_{self.idx}.csv", "w") as f:
             for (name, pid), el in self.cpu_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")

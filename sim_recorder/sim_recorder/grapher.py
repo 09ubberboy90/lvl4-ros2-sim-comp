@@ -5,13 +5,18 @@ import re
 from collections import defaultdict
 import numpy as np
 from scipy.interpolate import make_interp_spline, BSpline
-# import matplotlib.colors as mcolors
+from scipy.interpolate import interp1d
+from scipy import signal
 # import random
 from matplotlib import cm
 from numpy import linspace
 
+SMOOTH_INDEX = 21
+POLY_INDEX = 3
+
 f = []
-exclude = []
+exclude = ["data", "data_original"]
+# exclude = ["data", "data_webots"]
 for (dirpath, dirnames, filenames) in walk(os.path.join(os.path.dirname(__file__),".."), topdown=True):
     dirnames[:] = [d for d in dirnames if d not in exclude]
     f.extend([os.path.join(*dirpath.split("/"), s) for s in filenames])
@@ -63,16 +68,32 @@ for axs, (type, proc) in zip(axs, procs.items()):
         arr=np.array([xi+[np.nan]*(length-len(xi)) for xi in ls])
 
         mean = np.nanmean(arr, axis=0)
-        standard_dev = np.std(arr, axis=0)
+        standard_dev = np.nanstd(arr, axis=0)
         x = np.arange(0, mean.shape[0],1)/10 # because recording every 100 ms
-        xnew = np.linspace(x.min(), x.max(), mean.shape[0]*10) 
+        xnew = np.linspace(x.min(), x.max(), mean.shape[0]*1000) 
+        # f2 = interp1d(x, mean, kind='cubic')
+        # spl = make_interp_spline(x, mean, k=3)  # type: BSpline
+        # mean_smooth = spl(xnew)
+        # axs.plot(x, mean, label=name+"_org",color=color)
 
-        spl = make_interp_spline(x, mean, k=3)  # type: BSpline
-        mean_smooth = spl(xnew)
-        #axs.plot(x, mean, label=name)
-        axs.plot(xnew, mean_smooth, label=name, color=color)
+        y=signal.savgol_filter(mean,
+                           SMOOTH_INDEX, # window size used for filtering
+                           POLY_INDEX), # order of fitted polynomial
+        axs.plot(x, y[0], label=name, color=color)
+        # axs.plot(xnew, mean_smooth, label=name, color=color)
 
-        #axs.fill_between(x, mean-standard_dev, mean+standard_dev, alpha = 0.5, interpolate=True)
+        lower = mean-standard_dev
+        high = mean+standard_dev
+        lower=signal.savgol_filter(lower,
+                           SMOOTH_INDEX, # window size used for filtering
+                           POLY_INDEX), # order of fitted polynomial
+        high=signal.savgol_filter(high,
+                           SMOOTH_INDEX, # window size used for filtering
+                           POLY_INDEX), # order of fitted polynomial
+        
+        lower[0][lower[0] < 0] = 0
+        high[0][high[0] < 0] = 0
+        axs.fill_between(x, lower[0], high[0], alpha = 0.5, interpolate=False,color=color)
         axs.set_xlabel("Time (s)")
         if type == "ram":
             axs.set_ylabel("RAM usage (Mb)")
@@ -82,4 +103,42 @@ for axs, (type, proc) in zip(axs, procs.items()):
             axs.set_ylabel("CPU Usage (% of one core)")
         axs.legend(bbox_to_anchor=(1,1), loc="upper left")
 plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
-plt.savefig(os.path.join(os.path.dirname(__file__),"../data/pick_place.svg"))
+plt.savefig(os.path.join(os.path.dirname(__file__),"../data_webots/pick_place_smooth.svg"))
+
+fig, axs = plt.subplots(2,figsize=(12,7.5) )
+
+for axs, (type, proc) in zip(axs, procs.items()):
+    cm_subsection = linspace(0, 1, len(proc.values())) 
+    colors = [ cm.nipy_spectral(x) for x in cm_subsection ]
+    #colors.reverse()
+    for color, (name, ls) in zip(colors, proc.items()):
+        length = max(map(len, ls))
+        arr=np.array([xi+[np.nan]*(length-len(xi)) for xi in ls])
+
+        mean = np.nanmean(arr, axis=0)
+        standard_dev = np.nanstd(arr, axis=0)
+        x = np.arange(0, mean.shape[0],1)/10 # because recording every 100 ms
+        xnew = np.linspace(x.min(), x.max(), mean.shape[0]*1000) 
+        # f2 = interp1d(x, mean, kind='cubic')
+        # spl = make_interp_spline(x, mean, k=3)  # type: BSpline
+        # mean_smooth = spl(xnew)
+        # axs.plot(x, mean, label=name+"_org",color=color)
+
+        axs.plot(x, mean, label=name, color=color)
+        # axs.plot(xnew, mean_smooth, label=name, color=color)
+
+        lower = mean-standard_dev
+        high = mean+standard_dev
+        lower[lower < 0] = 0
+        high[high < 0] = 0
+        axs.fill_between(x, lower, high, alpha = 0.5, interpolate=False,color=color)
+        axs.set_xlabel("Time (s)")
+        if type == "ram":
+            axs.set_ylabel("RAM usage (Mb)")
+            axs.set_title("RAM usage against time")
+        else:
+            axs.set_title("CPU usage against time")
+            axs.set_ylabel("CPU Usage (% of one core)")
+        axs.legend(bbox_to_anchor=(1,1), loc="upper left")
+plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
+plt.savefig(os.path.join(os.path.dirname(__file__),"../data_webots/pick_place_no_smooth.svg"))
