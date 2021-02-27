@@ -31,6 +31,8 @@ def kill_proc_tree(pids, procs,interrupt_event, including_parent=False):
     time.sleep(2) # Wait for everything ot close to prevent broken_pipe
     for proc in procs[:-1]:
         proc.kill()
+    time.sleep(2) # Wait for everything ot close to prevent broken_pipe
+
 
 # Reference : https://stackoverflow.com/a/40281422
 def interrupt_handler(interrupt_event):
@@ -85,9 +87,10 @@ class Webots():
         self.name = "webots"
         self.commands = [
             "ros2 launch webots_simple_arm pick_place.launch.py",
+            "ros2 launch webots_simple_arm collision_webots.launch.py",
             "ros2 launch webots_simple_arm moveit_webots.launch.py",
         ]
-        self.delays = [7]
+        self.delays = [5,5]
 class Gazebo():
     def __init__(self):
         self.name = "gazebo"
@@ -113,26 +116,26 @@ def run(sim, idx):
     signal.signal(signal.SIGALRM, handler)
     signal.alarm(60)
     with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/log/{idx}.txt", "w") as f,\
-         open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt", "w") as out:
+         open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt", "a") as out:
         try:    
             while True:
                 text = reader.readline()
                 f.write(text)
                 if "Task completed Succesfully" in text:
                     print(f"Completed for {idx}")
-                    out.write(f"Completed for {idx}")
+                    out.write(f"Completed for {idx}\n")
                     signal.alarm(0)
                     kill_proc_tree(pids, procs, interrupt_event)
                     return
                 if "Cube is not in bound" in text:
                     print(f"Failed for {idx}")
-                    out.write(f"Failed for {idx}")
+                    out.write(f"Failed for {idx}\n")
                     signal.alarm(0)
                     kill_proc_tree(pids, procs, interrupt_event)
                     return
         except:
             print(f"Timeout for {idx}")
-            out.write(f"Timeout for {idx}")
+            out.write(f"Timeout for {idx}\n")
             f.write("Timeout")
             kill_proc_tree(pids, procs, interrupt_event)
 

@@ -20,7 +20,8 @@ except Exception as e:
 
 class SpawnerNode(WebotsNode):
     def __init__(self, args=None):
-        super().__init__("webots_spawner", args)
+        super().__init__("spawner", args)
+
         self.package_dir = get_package_share_directory('webots_simple_arm')
         self.children = self.robot.getRoot().getField("children")
         self.entity = self.create_service(
@@ -88,6 +89,7 @@ class SpawnerNode(WebotsNode):
 
 def main(args=None):
     rclpy.init(args=args)
+    os.environ['WEBOTS_ROBOT_NAME'] = "spawner"
 
     spawner = SpawnerNode(args=args)
 

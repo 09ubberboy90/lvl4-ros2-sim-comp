@@ -30,14 +30,10 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory('webots_simple_arm'), 'launch', 'panda_trajectory.launch.py')
         ))
-    collision = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(get_package_share_directory('webots_simple_arm'), 'launch', 'collision_webots.launch.py')
-        ))
     rviz = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory('simple_move_group'), 'launch', 'run_move_group.launch.py')
         ))
     return LaunchDescription([
-        webots,collision,rviz
+        webots,rviz
     ])

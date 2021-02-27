@@ -49,6 +49,7 @@ setup(
     entry_points={
         'console_scripts': [
             'panda_controller = webots_simple_arm.panda:main',
+            'panda_trajectory = webots_simple_arm.panda_trajectory:main',
         ],
     }
 )
