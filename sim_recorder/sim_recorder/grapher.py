@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-import os
+import os, sys
 from os import walk
 import re
 from collections import defaultdict
@@ -13,9 +13,13 @@ from numpy import linspace
 
 SMOOTH_INDEX = 21
 POLY_INDEX = 3
-
+if len(sys.argv) < 2:
+    folder = ["data"]
+else:
+    folder = [sys.argv[1]]
 f = []
-exclude = ["data", "data_original"]
+exclude = ["data", "data_original", "data_webots"]
+exclude = [el for el in exclude if el not in folder]
 # exclude = ["data", "data_webots"]
 for (dirpath, dirnames, filenames) in walk(os.path.join(os.path.dirname(__file__),".."), topdown=True):
     dirnames[:] = [d for d in dirnames if d not in exclude]
@@ -40,6 +44,8 @@ for key,el in types.items():
             for lines in f.readlines():
                 line = lines.split(",")
                 p = line[0]
+                if p == "ruby":
+                    p = "ignition"
                 val = line[1:]
                 val = [float(x) for x in val]
                 counter = 0
@@ -103,7 +109,7 @@ for axs, (type, proc) in zip(axs, procs.items()):
             axs.set_ylabel("CPU Usage (% of one core)")
         axs.legend(bbox_to_anchor=(1,1), loc="upper left")
 plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
-plt.savefig(os.path.join(os.path.dirname(__file__),"../data_webots/pick_place_smooth.svg"))
+plt.savefig(os.path.join(os.path.dirname(__file__),f"../{folder[0]}/pick_place_smooth.svg"))
 
 fig, axs = plt.subplots(2,figsize=(12,7.5) )
 
@@ -141,4 +147,4 @@ for axs, (type, proc) in zip(axs, procs.items()):
             axs.set_ylabel("CPU Usage (% of one core)")
         axs.legend(bbox_to_anchor=(1,1), loc="upper left")
 plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
-plt.savefig(os.path.join(os.path.dirname(__file__),"../data_webots/pick_place_no_smooth.svg"))
+plt.savefig(os.path.join(os.path.dirname(__file__),f"../{folder[0]}/pick_place_no_smooth.svg"))

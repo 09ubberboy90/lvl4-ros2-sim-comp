@@ -9,7 +9,6 @@ import rclpy
 from rclpy.node import Node
 
 
-
 class ProcMonitor(Node):
     """
     Create the main window and connect the menu bar slots.
@@ -45,7 +44,6 @@ class ProcMonitor(Node):
         sys.exit(0)
 
 
-
 allowed_gazebo = [
     "fake_joint_driver_node",
     "gzclient",
@@ -72,16 +70,30 @@ allowed_webots = [
     "webots_robotic_",
     "moveit_controller",
 ]
+allowed_ignition = [
+    "move_group",
+    "parameter_bridge",
+    "python3",
+    "ros2",
+    "ruby",
+    "rviz2",
+    "run_recording"
+]
 
-def run(simulator="webots", idx = 0, args=None):
+
+def run(simulator="webots", idx=0, args=None):
 
     rclpy.init(args=args)
-    simulator = allowed_webots if "webots" == simulator else allowed_gazebo
+    if "webots" == simulator:
+        simulator = allowed_webots
+    elif "gazebo" == simulator:
+        simulator = allowed_gazebo
+    else:
+        simulator = allowed_ignition
 
-    monitor = ProcMonitor(allowed_webots, idx)
-    signal.signal(signal.SIGINT, lambda sig, frame : monitor.dump_values())
-    signal.signal(signal.SIGTERM, lambda sig, frame : monitor.dump_values())
-
+    monitor = ProcMonitor(simulator, idx)
+    signal.signal(signal.SIGINT, lambda sig, frame: monitor.dump_values())
+    signal.signal(signal.SIGTERM, lambda sig, frame: monitor.dump_values())
 
     rclpy.spin(monitor)
     rclpy.shutdown()
@@ -90,6 +102,6 @@ def run(simulator="webots", idx = 0, args=None):
 def main(args=None):
     run(args=args)
 
+
 if __name__ == '__main__':
     main()
-

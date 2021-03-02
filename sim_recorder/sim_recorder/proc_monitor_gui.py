@@ -97,7 +97,7 @@ def run(simulator="webots"):
     simulator = allowed_webots if "webots" == simulator else allowed_gazebo
     grapher = QtWidgets.QApplication()
 
-    window = ProcMonitorGui(grapher, simulator)
+    window = ProcMonitorGui(grapher)
     signal.signal(signal.SIGTERM, lambda sig, frame : window.closeEvent)
     window.show()
     sys.exit(grapher.exec_())

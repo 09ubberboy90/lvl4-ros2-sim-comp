@@ -49,7 +49,6 @@ def run_com(w, q, com):
 def run_recorder(q, interrupt_event, simulator, idx, gui=False):
     task = threading.Thread(target=interrupt_handler, args=(interrupt_event,))
     task.start()
-    simulator = "webots" if simulator == "webots" else "gazebo"
     try:
         if gui:
             proc_monitor_gui.run(simulator, idx=idx)  # launch recording
@@ -70,7 +69,7 @@ def generate_procs(simulator, commands, r, w, q, interrupt_event, idx):
 
 def start_proces(delay, procs, q):
     pids = []
-    delay.append(0)  # Otherwise out of range
+    delay.append(0.5)  # Otherwise out of range
     delay.append(0)  # Otherwise out of range
     for idx, p in enumerate(procs):
         p.start()
@@ -101,11 +100,20 @@ class Gazebo():
             "ros2 launch simple_arm moveit_gazebo.launch.py",
         ]
         self.delays = [5, 5, 5]
+class Ignition():
+    def __init__(self):
+        self.name = "ignition"
+        self.commands = [
+            "ros2 launch ign_moveit2 example_throw.launch.py",
+            "echo timeout for recorder"
+        ]
+        self.delays = [1]
 
 def handler(signum, frame):
     raise Exception("TimeOut")
 
 def run(sim, idx):
+    os.remove("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt")
     r, w = Pipe()
     q = Queue()
     reader = os.fdopen(r.fileno(), 'r')
@@ -144,8 +152,10 @@ def run(sim, idx):
 def main(args=None):
     if len(sys.argv) == 1 or sys.argv[1] == "webots":
         sim = Webots()
-    else:
+    elif sys.argv[1] == "gazebo":
         sim = Gazebo()
+    else:
+        sim = Ignition()
 
     if len(sys.argv) == 3:
         iteration = int(sys.argv[2])
