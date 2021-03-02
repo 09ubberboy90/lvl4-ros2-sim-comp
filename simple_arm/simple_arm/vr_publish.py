@@ -117,19 +117,22 @@ class VrPublisher(Node):
                 self.point = point
 
                 rot = Quaternion()
-                rot.x = pose[1][0]
-                rot.y = pose[1][1]
-                rot.z = pose[1][2]
-                rot.w = pose[1][3]
 
                 q1 = pyq.Quaternion(pose[1])
+                q1 = q1.normalised
+
+                rot.w = q1[0]
+                rot.x = q1[1]
+                rot.y = q1[2]
+                rot.z = q1[3]
+
                 if self.rot is not None:
                     diffQuater = q1 - self.rot
                     conjBoxQuater = q1.inverse
                     velQuater = ((diffQuater * 2.0) / dtime) * conjBoxQuater
-                    self.ang_velocity.x = velQuater[0]
-                    self.ang_velocity.y = velQuater[1]
-                    self.ang_velocity.z = velQuater[2]
+                    self.ang_velocity.x = velQuater[1]
+                    self.ang_velocity.y = velQuater[2]
+                    self.ang_velocity.z = velQuater[3]
                     # print(self.ang_velocity)
                 self.rot = q1
 
@@ -148,12 +151,14 @@ class VrPublisher(Node):
 
                 name += "/vel"
                 self.publish(name, vel, Twist)
+
     def publish(self, name, value, type):
         pub = self.publishers_dict.get(name)
         if pub is None:
             pub = self.create_publisher(type, name, 10)
             self.publishers_dict[name] = pub
         pub.publish(value)
+
 
 def main(buttons=False, args=None):
     if not openvr.isRuntimeInstalled:
