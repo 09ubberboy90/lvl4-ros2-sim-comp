@@ -84,6 +84,7 @@ def start_proces(delay, procs, q):
 class Webots():
     def __init__(self):
         self.name = "webots"
+        self.timeout = 60
         self.commands = [
             "ros2 launch webots_simple_arm pick_place.launch.py",
             "ros2 launch webots_simple_arm collision_webots.launch.py",
@@ -93,6 +94,7 @@ class Webots():
 class Gazebo():
     def __init__(self):
         self.name = "gazebo"
+        self.timeout = 60
         self.commands = [
             "ros2 launch simple_arm gazebo.launch.py",
             "ros2 launch simple_move_group run_move_group.launch.py",
@@ -103,6 +105,7 @@ class Gazebo():
 class Ignition():
     def __init__(self):
         self.name = "ignition"
+        self.timeout = 18
         self.commands = [
             "ros2 launch ign_moveit2 example_throw.launch.py",
             "echo timeout for recorder"
@@ -122,7 +125,7 @@ def run(sim, idx):
     time.sleep(1)
     pids = start_proces(sim.delays, procs, q)
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(60)
+    signal.alarm(sim.timeout)
     with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/log/{idx}.txt", "w") as f,\
          open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt", "a") as out:
         try:    
