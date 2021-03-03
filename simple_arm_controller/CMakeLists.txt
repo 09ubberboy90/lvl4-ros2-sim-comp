@@ -40,6 +40,15 @@ ament_target_dependencies(moveit_controller
   sim_action_server
   gazebo_msgs
 )
+add_executable(throw_moveit src/throw_moveit.cpp include/moveit.hpp)
+ament_target_dependencies(throw_moveit
+  rclcpp
+  rclcpp_action
+  control_msgs
+  moveit_ros_planning_interface
+  sim_action_server
+  gazebo_msgs
+)
 add_executable(moveit_collision src/moveit_collision.cpp include/moveit.hpp)
 ament_target_dependencies(moveit_collision
   rclcpp
@@ -73,7 +82,7 @@ if(BUILD_TESTING)
 endif()
 
 ## Install
-install(TARGETS moveit_controller ign_controller vr_controller moveit_collision
+install(TARGETS moveit_controller ign_controller vr_controller moveit_collision throw_moveit
   DESTINATION lib/${PROJECT_NAME}
 )
 

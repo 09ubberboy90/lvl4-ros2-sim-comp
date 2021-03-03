@@ -21,8 +21,9 @@ setup(
     entry_points={
         'console_scripts': [
             "webots_spawner = sim_spawner.webots_spawner:main",
+            "webots_throw_spawner = sim_spawner.webots_throw_spawner:main",
             "gazebo_spawner = sim_spawner.gazebo_spawner:main",
-            "obj_service = sim_spawner.object_service:main",
+            "gazebo_throw_spawner = sim_spawner.gazebo_throw_spawner:main",
 
         ],
     },

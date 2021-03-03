@@ -13,6 +13,8 @@ launchers = [
     'launch/panda.launch.py',
     'launch/panda_trajectory.launch.py',
     'launch/moveit_webots.launch.py',
+    'launch/throw_moveit.launch.py',
+    'launch/throw_collision.launch.py',
     'launch/collision_webots.launch.py',
     'launch/pick_place.launch.py',
     'launch/vr_webots.launch.py',
