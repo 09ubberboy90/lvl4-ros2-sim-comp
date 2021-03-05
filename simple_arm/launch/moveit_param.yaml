@@ -123,7 +123,7 @@ move_arm:
       \ link1=\"panda_link6\" link2=\"panda_rightfinger\" reason=\"Never\"/>\n  <disable_collisions\
       \ link1=\"panda_link7\" link2=\"panda_rightfinger\" reason=\"Never\"/>\n</robot>\n\
       \n"
-    gazebo: true
+    gazebo: false
     use_spawn_obj: true
     panda_arm.kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
     panda_arm.kinematics_solver_search_resolution: 0.005
@@ -247,4 +247,4 @@ move_arm:
       \ />\n        <origin rpy=\"0 0 0\" xyz=\"0 0 0.0584\" />\n        <axis xyz=\"\
       0 -1 0\" />\n        <limit effort=\"20\" lower=\"0.0\" upper=\"0.04\" velocity=\"\
       0.2\" />\n    </joint>\n</robot>\n"
-    action_node_name: /arm_controller/follow_joint_trajectory
+    action_node_name: /follow_joint_trajectory

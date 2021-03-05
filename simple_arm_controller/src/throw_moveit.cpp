@@ -210,6 +210,28 @@ int main(int argc, char **argv)
                            0.8};
 
         move_group.setJointValueTarget(joints);
+
+        auto current_state = hand_move_group.getCurrentState();
+        float gripper_pose = (float)gripper_state::opened / 1000;
+        std::vector<double> joint_group_positions;
+        current_state->copyJointGroupPositions(current_state->getJointModelGroup("hand"), joint_group_positions);
+        joint_group_positions[0] = gripper_pose;
+        joint_group_positions[1] = gripper_pose;
+        hand_move_group.setJointValueTarget(joint_group_positions);
+
+        moveit::planning_interface::MoveGroupInterface::Plan gripper_plan;
+        for (int i = 0; i < 10; i++)
+        {
+            // 10 tries to plan otherwise give up
+            bool success = (hand_move_group.plan(gripper_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            RCLCPP_INFO(server->get_logger(), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
+
+            if (success)
+            {        
+                break;
+            }
+        }
+
         moveit::planning_interface::MoveGroupInterface::Plan arm_plan;
 
         for (int i = 0; i < 10; i++)
@@ -224,48 +246,35 @@ int main(int argc, char **argv)
             }
         }
 
-        float gripper_pose = (float)gripper_state::opened / 1000;
-        std::vector<double> joint_group_positions;
-        joint_group_positions[0] = gripper_pose;
-        joint_group_positions[1] = gripper_pose;
-        hand_move_group.setJointValueTarget(joint_group_positions);
+        auto gripper_traj = gripper_plan.trajectory_.joint_trajectory;
+        auto arm_traj = arm_plan.trajectory_.joint_trajectory;
 
-        moveit::planning_interface::MoveGroupInterface::Plan gripper_plan;
-
-        for (int i = 0; i < 10; i++)
+        // Merge hand opening into arm trajectory, such that it is timed for release (at 50%)
+        auto release_index = round(0.5*arm_traj.points.size());
+        std::cout << arm_traj.joint_names.size() << std::endl;
+        for (auto finger_joint : gripper_traj.joint_names)
         {
-            // 10 tries to plan otherwise give up
-            bool success = (move_group.plan(gripper_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            RCLCPP_INFO(server->get_logger(), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
-
-            if (success)
-            {
-                auto gripper_traj = gripper_plan.trajectory_.joint_trajectory;
-                auto arm_traj = arm_plan.trajectory_.joint_trajectory;
-
-                // Merge hand opening into arm trajectory, such that it is timed for release (at 50%)
-                auto release_index = round(0.5*arm_traj.points.size());
-                for (auto finger_joint : gripper_traj.joint_names)
-                {
-                    arm_traj.joint_names.push_back(finger_joint);
-                }
-                while (arm_traj.points[release_index].effort.size() < 9){
-                    arm_traj.points[release_index].effort.push_back(0.0);
-                }
-                for(int i = 0; i < 2; i++)
-                { 
-                    arm_traj.points[release_index].positions.push_back(
-                        gripper_traj.points[-1].positions[i]);
-                    arm_traj.points[release_index].velocities.push_back(
-                        gripper_traj.points[-1].velocities[i]);
-                    arm_traj.points[release_index].accelerations.push_back(
-                        gripper_traj.points[-1].accelerations[i]);
-                }
-                std::thread([&move_group, arm_plan]() { move_group.execute(arm_plan); }).detach();
-                //move_group->asyncExecute(plan);
-                return server->execute_plan(arm_plan.trajectory_.joint_trajectory);
-            }
+            arm_traj.joint_names.push_back(finger_joint);
         }
+        std::cout << arm_traj.joint_names.size() << std::endl;
+
+        while (arm_traj.points[release_index].effort.size() < 9){
+            arm_traj.points[release_index].effort.push_back(0.0);
+        }
+
+        for(int i = 0; i < 2; i++)
+        { 
+            arm_traj.points[release_index].positions.push_back(
+                gripper_traj.points[gripper_traj.points.size()-1].positions[i]);
+            arm_traj.points[release_index].velocities.push_back(
+                gripper_traj.points[gripper_traj.points.size()-1].velocities[i]);
+            arm_traj.points[release_index].accelerations.push_back(
+                gripper_traj.points[gripper_traj.points.size()-1].accelerations[i]);
+        }
+
+        std::thread([&move_group, arm_plan]() { move_group.execute(arm_plan); }).detach();
+        //move_group->asyncExecute(plan);
+        server->execute_plan(arm_plan.trajectory_.joint_trajectory);
 
         // Move to default position
         joints.position = {0.0,
