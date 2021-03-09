@@ -50,12 +50,16 @@ allowed_gazebo = [
     "gzserver",
     "mongod",
     "move_group",
+    "moveit_collision",
+    "moveit_controller",
     "python3",
     "robot_state_publisher",
     "ros2",
     "rviz2",
     "static_transform_publisher",
+    "run_recording"
 ]
+
 allowed_webots = [
     "fake_joint_driver_node",
     "mongod",
@@ -69,6 +73,8 @@ allowed_webots = [
     "webots-bin",
     "webots_robotic_",
     "moveit_controller",
+    "moveit_collision",
+    "run_recording" 
 ]
 allowed_ignition = [
     "move_group",

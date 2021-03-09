@@ -18,7 +18,7 @@ if len(sys.argv) < 2:
 else:
     folder = [sys.argv[1]]
 f = []
-exclude = ["data", "data_original", "data_webots"]
+exclude = ["data", "data_webots_org", "data_webots_throw", "data_webots", "data_gazebo", "data_gazebo_throw"]
 exclude = [el for el in exclude if el not in folder]
 # exclude = ["data", "data_webots"]
 for (dirpath, dirnames, filenames) in walk(os.path.join(os.path.dirname(__file__),".."), topdown=True):
@@ -26,6 +26,7 @@ for (dirpath, dirnames, filenames) in walk(os.path.join(os.path.dirname(__file__
     f.extend([os.path.join(*dirpath.split("/"), s) for s in filenames])
 #tmp = [el for el in f if el[-5:] == "ipynb"]
 tmp = [el for el in f if el[-3:] == "csv"]
+print(f"Found {len(tmp)}")
 types = defaultdict(list)
 for el in tmp:
     if "ram" in el:

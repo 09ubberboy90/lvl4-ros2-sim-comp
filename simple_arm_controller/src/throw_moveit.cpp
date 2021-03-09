@@ -285,6 +285,7 @@ int main(int argc, char **argv)
                            1.57,
                            0.79};
         goto_joint_pose(&move_group, server, joints);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Task completed Succesfully");
     }
     rclcpp::shutdown();
     return 0;

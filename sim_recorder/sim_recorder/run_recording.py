@@ -107,6 +107,34 @@ class Ignition():
         self.name = "ignition"
         self.timeout = 18
         self.commands = [
+        ]
+        self.delays = [1]
+class WebotsThrow():
+    def __init__(self):
+        self.name = "webots"
+        self.timeout = 60
+        self.commands = [
+            "ros2 launch webots_simple_arm pick_place.launch.py",
+            "ros2 launch webots_simple_arm throw_collision.launch.py",
+            "ros2 launch webots_simple_arm throw_moveit.launch.py",
+        ]
+        self.delays = [5,5]
+class GazeboThrow():
+    def __init__(self):
+        self.name = "gazebo"
+        self.timeout = 60
+        self.commands = [
+            "ros2 launch simple_arm gazebo.launch.py",
+            "ros2 launch simple_move_group run_move_group.launch.py",
+            "ros2 launch simple_arm throw_collision.launch.py",
+            "ros2 launch simple_arm throw_moveit.launch.py",
+        ]
+        self.delays = [5, 5, 5]
+class IgnitionThrow():
+    def __init__(self):
+        self.name = "ignition"
+        self.timeout = 18
+        self.commands = [
             "ros2 launch ign_moveit2 example_throw.launch.py",
             "echo timeout for recorder"
         ]
@@ -155,6 +183,12 @@ def run(sim, idx):
 def main(args=None):
     if len(sys.argv) == 1 or sys.argv[1] == "webots":
         sim = Webots()
+    elif sys.argv[1] == "gazebo_throw":
+        sim = GazeboThrow()
+    elif sys.argv[1] == "webots_throw":
+        sim = WebotsThrow()
+    elif sys.argv[1] == "ignition_throw":
+        sim = IgnitionThrow()
     elif sys.argv[1] == "gazebo":
         sim = Gazebo()
     else:
