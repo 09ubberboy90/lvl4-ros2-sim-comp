@@ -132,7 +132,7 @@ class GazeboThrow():
         self.delays = [5, 5, 5]
 class IgnitionThrow():
     def __init__(self):
-        self.name = "ignition"
+        self.name = "ignition_throw"
         self.timeout = 20
         self.commands = [
             "ros2 launch ign_moveit2 example_throw.launch.py",
@@ -144,8 +144,14 @@ def handler(signum, frame):
     raise Exception("TimeOut")
 
 def run(sim, idx):
-    if os.path.exists("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt"):
-        os.remove("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt")
+    path = "/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/"
+    try:
+        os.mkdir(path+f"{sim.name}")
+        os.mkdir(path+f"{sim.name}/log")
+    except:
+        print("Folder exist. Overwriting...")
+    if os.path.exists(path+f"{sim.name}/run.txt"):
+        os.remove(path+f"{sim.name}/run.txt")
     r, w = Pipe()
     q = Queue()
     reader = os.fdopen(r.fileno(), 'r')
@@ -155,8 +161,8 @@ def run(sim, idx):
     pids = start_proces(sim.delays, procs, q)
     signal.signal(signal.SIGALRM, handler)
     signal.alarm(sim.timeout)
-    with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/log/{idx}.txt", "w") as f,\
-         open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt", "a") as out:
+    with open(path+f"{sim.name}/log/{idx}.txt", "w") as f,\
+         open(path+f"{sim.name}/run.txt", "a") as out:
         try:    
             while True:
                 text = reader.readline()

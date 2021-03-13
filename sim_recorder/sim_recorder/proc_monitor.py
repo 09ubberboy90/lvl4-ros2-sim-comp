@@ -14,7 +14,7 @@ class ProcMonitor(Node):
     Create the main window and connect the menu bar slots.
     """
 
-    def __init__(self, allowed, idx):
+    def __init__(self, allowed, idx, sim_name):
         super().__init__('proccess_monitor')
         self.cpu_dict = defaultdict(list)
         self.ram_dict = defaultdict(list)
@@ -23,10 +23,14 @@ class ProcMonitor(Node):
         self.update_missing()
         self.timer = self.create_timer(0.1, self.animate)
         self.idx = idx
+        self.sim_name = sim_name
+        self.counter = 0
         
     def update_missing(self):
         self.missing = [el for el in self.allowed if el not in self.procs.keys()]
-        print(self.missing)
+        if self.counter < 10:
+            print(self.missing)
+            self.counter += 1 
         for proc in psutil.process_iter():
             p = proc.name()
             if p in self.missing:
@@ -60,10 +64,17 @@ class ProcMonitor(Node):
                 pass
 
     def dump_values(self):
-        with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/cpu/cpu_{self.idx}.csv", "w") as f:
+        path = "/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/"
+        try:
+            os.mkdir(path+f"{self.sim_name}/ram")
+            os.mkdir(path+f"{self.sim_name}/cpu")
+        except:
+            print("Folder exist. Overwriting...")
+
+        with open(path + f"{self.sim_name}/cpu/cpu_{self.idx}.csv", "w") as f:
             for (name, pid), el in self.cpu_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
-        with open(f"/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/ram/ram_{self.idx}.csv", "w") as f:
+        with open(path + f"{self.sim_name}/ram/ram_{self.idx}.csv", "w") as f:
             for (name, pid), el in self.ram_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")
         sys.exit(0)
@@ -82,7 +93,7 @@ allowed_gazebo = [
     "ros2",
     "rviz2",
     "static_transform_publisher",
-    "run_recording"
+    "run_recording",
     "moveit_controller",
 ]
 
@@ -100,7 +111,7 @@ allowed_webots = [
     "webots-bin",
     "webots_robotic_",
     "moveit_collision",
-    "run_recording" 
+    "run_recording",
     "moveit_controller",
 ]
 allowed_ignition = [
@@ -118,17 +129,17 @@ def run(simulator="webots", idx=0, args=None):
 
     rclpy.init(args=args)
     if "webots" == simulator:
-        simulator = allowed_webots[1:]
+        allowed = allowed_webots[1:]
     elif "gazebo" == simulator:
-        simulator = allowed_gazebo[1:]
+        allowed = allowed_gazebo[1:]
     elif "webots_throw" == simulator:
-        simulator = allowed_webots[:-1]
+        allowed = allowed_webots[:-1]
     elif "gazebo_throw" == simulator:
-        simulator = allowed_gazebo[:-1]
+        allowed = allowed_gazebo[:-1]
     else:
-        simulator = allowed_ignition
+        allowed = allowed_ignition
 
-    monitor = ProcMonitor(simulator, idx)
+    monitor = ProcMonitor(allowed, idx, simulator)
     signal.signal(signal.SIGINT, lambda sig, frame: monitor.dump_values())
     signal.signal(signal.SIGTERM, lambda sig, frame: monitor.dump_values())
 
