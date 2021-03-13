@@ -51,6 +51,8 @@ class ProcMonitor(Node):
                     if cpu_usage > 2400:
                         print("Error : High Cpu Usage")
                         cpu_usage = 2400
+                    if len(self.cpu_dict[(name, p.pid)]) == 0 and cpu_usage > 300:
+                        cpu_usage = 300
                     ram_usage = p.memory_info().rss / (1024*1024)
                     self.cpu_dict[(name, p.pid)].append(cpu_usage)
                     self.ram_dict[(name, p.pid)].append(ram_usage)

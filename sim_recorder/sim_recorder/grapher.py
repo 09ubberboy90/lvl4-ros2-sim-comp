@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import os, sys
 from os import walk
 import re
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import numpy as np
 from scipy.interpolate import make_interp_spline, BSpline
 from scipy.interpolate import interp1d
@@ -67,10 +67,15 @@ for key,el in types.items():
 
 
 for axs, (type, proc) in zip(axs, procs.items()):
-    cm_subsection = linspace(0, 1, len(proc.values())) 
-    colors = [ cm.nipy_spectral(x) for x in cm_subsection ]
+    cm_subsection = linspace(0.0, 1.0, len(proc.values())) 
+    colors = [ cm.jet(x) for x in cm_subsection ]
+    sorted_dict = OrderedDict()
+
+    keys = sorted(proc.keys())
+    for key in keys:
+        sorted_dict[key] = proc[key]
     #colors.reverse()
-    for color, (name, ls) in zip(colors, proc.items()):
+    for color, (name, ls) in zip(colors[::1], sorted_dict.items()):
         length = max(map(len, ls))
         arr=np.array([xi+[np.nan]*(length-len(xi)) for xi in ls])
 
@@ -100,6 +105,10 @@ for axs, (type, proc) in zip(axs, procs.items()):
         
         lower[0][lower[0] < 0] = 0
         high[0][high[0] < 0] = 0
+        
+        for i in range(10):
+            if high[0][i] > 300 and type == "cpu":
+                high[0][i] = y[0][i]
         axs.fill_between(x, lower[0], high[0], alpha = 0.5, interpolate=False,color=color)
         axs.set_xlabel("Time (s)")
         if type == "ram":
@@ -108,17 +117,22 @@ for axs, (type, proc) in zip(axs, procs.items()):
         else:
             axs.set_title("CPU usage against time")
             axs.set_ylabel("CPU Usage (% of one core)")
-        axs.legend(bbox_to_anchor=(1,1), loc="upper left")
+    axs.legend( bbox_to_anchor=(1,1.1), loc="upper left")
 plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
 plt.savefig(os.path.join(os.path.dirname(__file__),f"../{folder[0]}/pick_place_smooth.svg"))
 
 fig, axs = plt.subplots(2,figsize=(12,7.5) )
 
 for axs, (type, proc) in zip(axs, procs.items()):
-    cm_subsection = linspace(0, 1, len(proc.values())) 
-    colors = [ cm.nipy_spectral(x) for x in cm_subsection ]
+    cm_subsection = linspace(0.0, 1.0, len(proc.values())) 
+    colors = [ cm.jet(x) for x in cm_subsection ]
+    sorted_dict = OrderedDict()
+
+    keys = sorted(proc.keys())
+    for key in keys:
+        sorted_dict[key] = proc[key]
     #colors.reverse()
-    for color, (name, ls) in zip(colors, proc.items()):
+    for color, (name, ls) in zip(colors[::1], sorted_dict.items()):
         length = max(map(len, ls))
         arr=np.array([xi+[np.nan]*(length-len(xi)) for xi in ls])
 
@@ -138,6 +152,10 @@ for axs, (type, proc) in zip(axs, procs.items()):
         high = mean+standard_dev
         lower[lower < 0] = 0
         high[high < 0] = 0
+        for i in range(10):
+            if high[i] > 400 and type == "cpu":
+                high[i] = mean[i]
+
         axs.fill_between(x, lower, high, alpha = 0.5, interpolate=False,color=color)
         axs.set_xlabel("Time (s)")
         if type == "ram":
@@ -146,6 +164,6 @@ for axs, (type, proc) in zip(axs, procs.items()):
         else:
             axs.set_title("CPU usage against time")
             axs.set_ylabel("CPU Usage (% of one core)")
-        axs.legend(bbox_to_anchor=(1,1), loc="upper left")
+    axs.legend( bbox_to_anchor=(1,1.1), loc="upper left")
 plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
 plt.savefig(os.path.join(os.path.dirname(__file__),f"../{folder[0]}/pick_place_no_smooth.svg"))
