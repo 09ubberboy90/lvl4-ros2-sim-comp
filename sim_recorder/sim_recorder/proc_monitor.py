@@ -16,18 +16,41 @@ class ProcMonitor(Node):
 
     def __init__(self, allowed, idx):
         super().__init__('proccess_monitor')
-        self.procs = [(proc.name(), proc)
-                      for proc in psutil.process_iter() if proc.name() in allowed]
         self.cpu_dict = defaultdict(list)
         self.ram_dict = defaultdict(list)
+        self.allowed = allowed
+        self.procs = {}
+        self.update_missing()
         self.timer = self.create_timer(0.1, self.animate)
         self.idx = idx
+        
+    def update_missing(self):
+        self.missing = [el for el in self.allowed if el not in self.procs.keys()]
+        print(self.missing)
+        for proc in psutil.process_iter():
+            p = proc.name()
+            if p in self.missing:
+                new_p = p
+                counter = 0
+                while new_p in self.procs.keys():
+                    counter += 1
+                    new_p = new_p + "_" + str(counter)
+                if counter != 0:
+                    p = p+"_"+str(counter)
+                self.procs[p] = proc 
+                proc.cpu_percent() # discard value
+
 
     def animate(self):
-        for name, p in self.procs:
+        if self.missing:
+            self.update_missing()
+        for name, p in self.procs.items():
             try:
                 with p.oneshot():
                     cpu_usage = p.cpu_percent()
+                    if cpu_usage > 2400:
+                        print("Error : High Cpu Usage")
+                        cpu_usage = 2400
                     ram_usage = p.memory_info().rss / (1024*1024)
                     self.cpu_dict[(name, p.pid)].append(cpu_usage)
                     self.ram_dict[(name, p.pid)].append(ram_usage)
@@ -45,22 +68,24 @@ class ProcMonitor(Node):
 
 
 allowed_gazebo = [
+    "throw_moveit",
     "fake_joint_driver_node",
     "gzclient",
     "gzserver",
     "mongod",
     "move_group",
     "moveit_collision",
-    "moveit_controller",
     "python3",
     "robot_state_publisher",
     "ros2",
     "rviz2",
     "static_transform_publisher",
     "run_recording"
+    "moveit_controller",
 ]
 
 allowed_webots = [
+    "throw_moveit",
     "fake_joint_driver_node",
     "mongod",
     "move_group",
@@ -72,9 +97,9 @@ allowed_webots = [
     "webots",
     "webots-bin",
     "webots_robotic_",
-    "moveit_controller",
     "moveit_collision",
     "run_recording" 
+    "moveit_controller",
 ]
 allowed_ignition = [
     "move_group",
@@ -91,9 +116,13 @@ def run(simulator="webots", idx=0, args=None):
 
     rclpy.init(args=args)
     if "webots" == simulator:
-        simulator = allowed_webots
+        simulator = allowed_webots[1:]
     elif "gazebo" == simulator:
-        simulator = allowed_gazebo
+        simulator = allowed_gazebo[1:]
+    elif "webots_throw" == simulator:
+        simulator = allowed_webots[:-1]
+    elif "gazebo_throw" == simulator:
+        simulator = allowed_gazebo[:-1]
     else:
         simulator = allowed_ignition
 

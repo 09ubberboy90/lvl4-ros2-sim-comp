@@ -61,16 +61,16 @@ def run_recorder(q, interrupt_event, simulator, idx, gui=False):
 def generate_procs(simulator, commands, r, w, q, interrupt_event, idx):
     procs = []
     for com in commands:
-        procs.append(Process(target=run_com, args=(w, q, com)))
+        procs.append(Process(target=run_com, args=(w, q, com), name=com))
     procs.append(Process(target=run_recorder, args=(
-        q, interrupt_event, simulator, idx), daemon=True))
+        q, interrupt_event, simulator, idx), daemon=True, name="Recorder"))
     return procs
 
 
 def start_proces(delay, procs, q):
     pids = []
-    delay.append(0.5)  # Otherwise out of range
-    delay.append(0)  # Otherwise out of range
+    delay.append(0) # Out of bound exception prevention
+    delay.append(0) # Out of bound exception prevention
     for idx, p in enumerate(procs):
         p.start()
         time.sleep(delay[idx])
@@ -105,13 +105,13 @@ class Gazebo():
 class Ignition():
     def __init__(self):
         self.name = "ignition"
-        self.timeout = 18
+        self.timeout = 20
         self.commands = [
         ]
         self.delays = [1]
 class WebotsThrow():
     def __init__(self):
-        self.name = "webots"
+        self.name = "webots_throw"
         self.timeout = 60
         self.commands = [
             "ros2 launch webots_simple_arm pick_place.launch.py",
@@ -121,7 +121,7 @@ class WebotsThrow():
         self.delays = [5,5]
 class GazeboThrow():
     def __init__(self):
-        self.name = "gazebo"
+        self.name = "gazebo_throw"
         self.timeout = 60
         self.commands = [
             "ros2 launch simple_arm gazebo.launch.py",
@@ -133,7 +133,7 @@ class GazeboThrow():
 class IgnitionThrow():
     def __init__(self):
         self.name = "ignition"
-        self.timeout = 18
+        self.timeout = 20
         self.commands = [
             "ros2 launch ign_moveit2 example_throw.launch.py",
             "echo timeout for recorder"
@@ -144,7 +144,8 @@ def handler(signum, frame):
     raise Exception("TimeOut")
 
 def run(sim, idx):
-    os.remove("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt")
+    if os.path.exists("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt"):
+        os.remove("/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/run.txt")
     r, w = Pipe()
     q = Queue()
     reader = os.fdopen(r.fileno(), 'r')
