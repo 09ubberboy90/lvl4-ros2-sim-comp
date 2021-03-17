@@ -65,7 +65,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'ign_args',
-            default_value=[os.path.join(pkg_share, 'worlds', 'empty.sdf')],
+            default_value=[os.path.join(pkg_share, 'worlds', 'panda_place.sdf')],
             description='Ignition Gazebo arguments'),
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),

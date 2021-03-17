@@ -66,7 +66,7 @@ private:
     void listener_callback(const geometry_msgs::msg::Pose::SharedPtr msg)
     {
         pose = *msg;
-        pose.position.z += 0.1;
+        pose.position.z += 0.2;
     }
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr subscription_;
 };
