@@ -18,6 +18,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 find_package(ament_cmake REQUIRED)
 find_package(control_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -67,9 +68,10 @@ ament_target_dependencies(vr_controller
   sim_action_server
 )
 add_executable(ign_controller src/ign_controller.cpp)
-ament_target_dependencies(ign_controller
-  rclcpp
-  rclcpp_action
+ament_target_dependencies(republisher
+  rclcpp 
+  std_msgs
+  sensor_msgs
   control_msgs
   ignition-transport9
 )
