@@ -11,29 +11,25 @@ enum gripper_state
     closed = 0
 };
 
-bool wait_for_exec(moveit::planning_interface::MoveGroupInterface *move_group, std::shared_ptr<sim_action_server::ActionServer> server)
+bool wait_for_exec(moveit::planning_interface::MoveGroupInterface *move_group)
 {
     moveit::planning_interface::MoveGroupInterface::Plan plan;
     for (int i = 0; i < 10; i++)
     {
         // 10 tries to plan otherwise give up
         bool success = (move_group->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        RCLCPP_INFO(server->get_logger(), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
-
         if (success)
         {
             std::thread([move_group, plan]() { move_group->execute(plan); }).detach();
             //move_group->asyncExecute(plan);
-            return server->execute_plan(plan.trajectory_.joint_trajectory);
+            return true;
         }
     }
-    auto pose = move_group->getPoseTarget().pose.position;
-    RCLCPP_ERROR(server->get_logger(), "Failed to find a valid path to %f, %f, %f", pose.x, pose.y, pose.z);
     throw "Couldn't plan a path";
     return false;
 }
 
-bool change_gripper(moveit::planning_interface::MoveGroupInterface *hand_move_group, std::shared_ptr<sim_action_server::ActionServer> server, gripper_state state)
+bool change_gripper(moveit::planning_interface::MoveGroupInterface *hand_move_group, gripper_state state)
 {
     auto current_state = hand_move_group->getCurrentState();
     std::vector<double> joint_group_positions;
@@ -42,19 +38,20 @@ bool change_gripper(moveit::planning_interface::MoveGroupInterface *hand_move_gr
     joint_group_positions[0] = pose;
     joint_group_positions[1] = pose;
     hand_move_group->setJointValueTarget(joint_group_positions);
-    return wait_for_exec(hand_move_group, server);
+    return wait_for_exec(hand_move_group);
 }
 
-bool goto_pose(moveit::planning_interface::MoveGroupInterface *move_group, std::shared_ptr<sim_action_server::ActionServer> server, geometry_msgs::msg::Pose pose)
+bool goto_pose(moveit::planning_interface::MoveGroupInterface *move_group, geometry_msgs::msg::Pose pose)
 {
     move_group->setPoseTarget(pose);
-    return wait_for_exec(move_group, server);
+    return wait_for_exec(move_group);
 }
-bool goto_joint_pose(moveit::planning_interface::MoveGroupInterface *move_group, std::shared_ptr<sim_action_server::ActionServer> server, sensor_msgs::msg::JointState joints)
+bool goto_joint_pose(moveit::planning_interface::MoveGroupInterface *move_group, sensor_msgs::msg::JointState joints)
 {
     move_group->setJointValueTarget(joints);
-    return wait_for_exec(move_group, server);
+    return wait_for_exec(move_group);
 }
+
 class GetPose : public rclcpp::Node
 {
 public:
@@ -96,28 +93,13 @@ int main(int argc, char **argv)
     moveit::planning_interface::MoveGroupInterface hand_move_group(move_group_node, "hand");
     move_group.allowReplanning(true);
     move_group.setNumPlanningAttempts(10);
-    moveit::planning_interface::PlanningSceneInterface planning_scene_interface("");
 
-    std::string action_node_name;
-    bool gazebo;
-    if (!move_group_node->get_parameter("gazebo", gazebo))
-    {
-        // In case the parameter was not created use default
-        gazebo = false;
-    }
     bool use_spawn_obj;
     if (!move_group_node->get_parameter("use_spawn_obj", use_spawn_obj))
     {
         // In case the parameter was not created use default
         use_spawn_obj = false;
     }
-    if (!move_group_node->get_parameter("action_node_name", action_node_name))
-    {
-        // In case the parameter was not created use default
-        action_node_name = "/follow_joint_trajectory";
-    }
-
-    auto server = std::make_shared<sim_action_server::ActionServer>("trajectory_control", action_node_name);
 
     // Planning to a Pose goal
     if (use_spawn_obj)
@@ -125,7 +107,7 @@ int main(int argc, char **argv)
         auto start_pose = move_group.getCurrentPose().pose;
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
-        change_gripper(&hand_move_group, server, gripper_state::opened);
+        change_gripper(&hand_move_group, gripper_state::opened);
 
         auto pose = pose_node->pose;
         Quaternionf q = AngleAxisf(3.14, Vector3f::UnitX()) * AngleAxisf(0, Vector3f::UnitY()) * AngleAxisf(0.785, Vector3f::UnitZ());
@@ -135,28 +117,28 @@ int main(int argc, char **argv)
         pose.orientation.y = q.y();
         pose.orientation.z = q.z();
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to object pose");
-        goto_pose(&move_group, server, pose);
+        goto_pose(&move_group, pose);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Closing hand");
-        change_gripper(&hand_move_group, server, gripper_state::closed);
+        change_gripper(&hand_move_group,  gripper_state::closed);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lifting");
         pose.position.z += 0.1;
-        goto_pose(&move_group, server, pose);
+        goto_pose(&move_group,  pose);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to target pose");
         pose.position.x += 0.2;
-        goto_pose(&move_group, server, pose);
+        goto_pose(&move_group,  pose);
 
         // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lowering");
         // pose.position.z -= 0.1;
         // goto_pose(&move_group, server, pose);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
-        change_gripper(&hand_move_group, server, gripper_state::opened);
+        change_gripper(&hand_move_group,  gripper_state::opened);
 
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to start pose");
-        goto_pose(&move_group, server, start_pose);
+        goto_pose(&move_group,  start_pose);
         auto new_pose = pose_node->pose;
         std::cout << new_pose.position.x << "," << pose.position.x << std::endl;
         std::cout << new_pose.position.y << "," << pose.position.y << std::endl;

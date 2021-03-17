@@ -66,6 +66,7 @@ private:
     void listener_callback(const geometry_msgs::msg::Pose::SharedPtr msg)
     {
         pose = *msg;
+        pose.position.z += 0.1;
     }
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr subscription_;
 };
@@ -168,7 +169,6 @@ int main(int argc, char **argv)
         {
             // 10 tries to plan otherwise give up
             bool success = (hand_move_group.plan(gripper_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            RCLCPP_INFO(move_group_node->get_logger(), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
 
             if (success)
             {        
@@ -182,7 +182,6 @@ int main(int argc, char **argv)
         {
             // 10 tries to plan otherwise give up
             bool success = (move_group.plan(arm_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            RCLCPP_INFO(move_group_node->get_logger(), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
 
             if (success)
             {
