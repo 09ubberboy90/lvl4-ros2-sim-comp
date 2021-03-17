@@ -50,6 +50,24 @@ ament_target_dependencies(throw_moveit
   sim_action_server
   gazebo_msgs
 )
+add_executable(throw_ign src/throw_ign.cpp include/moveit.hpp)
+ament_target_dependencies(throw_ign
+  rclcpp
+  rclcpp_action
+  control_msgs
+  moveit_ros_planning_interface
+  sim_action_server
+  gazebo_msgs
+)
+add_executable(moveit_ign src/moveit_ign.cpp include/moveit.hpp)
+ament_target_dependencies(moveit_ign
+  rclcpp
+  rclcpp_action
+  control_msgs
+  moveit_ros_planning_interface
+  sim_action_server
+  gazebo_msgs
+)
 add_executable(moveit_collision src/moveit_collision.cpp include/moveit.hpp)
 ament_target_dependencies(moveit_collision
   rclcpp
@@ -67,7 +85,7 @@ ament_target_dependencies(vr_controller
   moveit_ros_planning_interface
   sim_action_server
 )
-add_executable(ign_controller src/ign_controller.cpp)
+add_executable(republisher src/republisher.cpp)
 ament_target_dependencies(republisher
   rclcpp 
   std_msgs
@@ -84,7 +102,7 @@ if(BUILD_TESTING)
 endif()
 
 ## Install
-install(TARGETS moveit_controller ign_controller vr_controller moveit_collision throw_moveit
+install(TARGETS moveit_controller throw_ign vr_controller moveit_collision throw_moveit republisher moveit_ign
   DESTINATION lib/${PROJECT_NAME}
 )
 

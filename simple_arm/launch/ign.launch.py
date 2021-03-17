@@ -26,17 +26,13 @@ def generate_launch_description():
     pkg_name = "simple_arm"
     pkg_ros_ign_gazebo = get_package_share_directory('ros_ign_gazebo')
     pkg_share = get_package_share_directory(pkg_name)
-    config_name = "ur_configs"
-    config_share = get_package_share_directory(config_name)
-    world = os.path.join(pkg_share,
-                         'worlds', 'panda_throw.sdf')
+
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_ros_ign_gazebo, 'launch', 'ign_gazebo.launch.py'),
-            launch_arguments=('ign_args', [world, ' -r'])
-        ),
-    )
+        ),)
+
     robot_description_config = load_file(
         'ur_configs', 'urdf/panda/panda_arm_hand.urdf')
     robot_description = {'robot_description': robot_description_config}
@@ -51,14 +47,20 @@ def generate_launch_description():
                    executable='republisher',
                    output='screen',
                    )
-    # spawn = Node(package='ros_ign_gazebo', executable='create',
-    #              arguments=[
-    #                  '-name', 'panda',
-    #                  '-x', '0.0',
-    #                  '-z', '0',
-    #                  '-Y', '0',
-    #                  '-file', "/home/ubb/Documents/PersonalProject/VrController/ur_configs/urdf/panda/panda_arm_hand.sdf"],
-    #              output='screen')
+    spawn = Node(package='ros_ign_gazebo', executable='create',
+                 arguments=[
+                     '-name', 'panda',
+                     '-x', '0',
+                     '-z', '0',
+                     '-Y', '0',
+                     '-file', "/home/ubb/Documents/PersonalProject/VrController/ur_configs/urdf/panda/panda_arm_hand.sdf"],
+                 output='screen')
+    bridge = Node(package='ros_ign_bridge',
+             executable='parameter_bridge',
+             name='parameter_bridge_throwing_object_pose',
+             output='screen',
+             arguments=[
+                 '/model/throwing_object/pose@geometry_msgs/msg/Pose[ignition.msgs.Pose'])
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -69,6 +71,7 @@ def generate_launch_description():
                               description='Open RViz.'),
         gazebo,
         ign_pub,
-        # spawn,
+        spawn,
         state,
+        bridge
     ])
