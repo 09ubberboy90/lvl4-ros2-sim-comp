@@ -34,7 +34,7 @@ for el in tmp:
     else:
         types["cpu"].append(el)
 
-fig, axs = plt.subplots(2,figsize=(12,7.5) )
+fig, axs = plt.subplots(2,figsize=(12,8) )
 
 procs = defaultdict(lambda: defaultdict(list))
 
@@ -119,9 +119,9 @@ for axs, (type, proc) in zip(axs, procs.items()):
             axs.set_ylabel("CPU Usage (% of one core)")
     axs.legend( bbox_to_anchor=(1,1.1), loc="upper left")
 plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
-plt.savefig(os.path.join(os.path.dirname(__file__),f"../data/{folder}/pick_place_smooth.svg"))
+plt.savefig(os.path.join(os.path.dirname(__file__),f"../data/{folder}/{folder}_pick_place_smooth.svg"))
 
-fig, axs = plt.subplots(2,figsize=(12,7.5) )
+fig, axs = plt.subplots(2,figsize=(12,8) )
 
 for axs, (type, proc) in zip(axs, procs.items()):
     cm_subsection = linspace(0.0, 1.0, len(proc.values())) 
@@ -166,4 +166,4 @@ for axs, (type, proc) in zip(axs, procs.items()):
             axs.set_ylabel("CPU Usage (% of one core)")
     axs.legend( bbox_to_anchor=(1,1.1), loc="upper left")
 plt.subplots_adjust(left=0.07, right=0.75, bottom=0.08, top=0.95, hspace=0.26)
-plt.savefig(os.path.join(os.path.dirname(__file__),f"../data/{folder}/pick_place_no_smooth.svg"))
+plt.savefig(os.path.join(os.path.dirname(__file__),f"../data/{folder}/{folder}_pick_place_no_smooth.svg"))

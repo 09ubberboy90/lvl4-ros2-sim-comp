@@ -27,7 +27,6 @@ def generate_launch_description():
     pkg_ros_ign_gazebo = get_package_share_directory('ros_ign_gazebo')
     pkg_share = get_package_share_directory(pkg_name)
 
-
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_ros_ign_gazebo, 'launch', 'ign_gazebo.launch.py'),
@@ -65,10 +64,8 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'ign_args',
-            default_value=[os.path.join(pkg_share, 'worlds', 'panda_place.sdf')],
+            default_value=[os.path.join(pkg_share, 'worlds', 'panda_throw.sdf')],
             description='Ignition Gazebo arguments'),
-        DeclareLaunchArgument('rviz', default_value='true',
-                              description='Open RViz.'),
         gazebo,
         ign_pub,
         spawn,

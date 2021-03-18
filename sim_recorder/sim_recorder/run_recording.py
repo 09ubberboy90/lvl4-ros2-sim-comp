@@ -53,6 +53,7 @@ def run_recorder(q, interrupt_event, simulator, idx, gui=False):
         if gui:
             proc_monitor_gui.run(simulator, idx=idx)  # launch recording
         else:
+            print(simulator)
             proc_monitor.run(simulator,idx=idx)
     except:
         q.put("Exit")
@@ -72,6 +73,7 @@ def start_proces(delay, procs, q):
     delay.append(0) # Out of bound exception prevention
     delay.append(0) # Out of bound exception prevention
     for idx, p in enumerate(procs):
+        print(p.name)
         p.start()
         time.sleep(delay[idx])
 
@@ -105,10 +107,21 @@ class Gazebo():
 class Ignition():
     def __init__(self):
         self.name = "ignition"
-        self.timeout = 20
+        self.timeout = 60
         self.commands = [
+            "ros2 launch simple_arm ign_place.launch.py",
+            "ros2 launch simple_move_group run_move_group.launch.py",
+            "ros2 launch simple_arm ign_throw_moveit.launch.py",
         ]
-        self.delays = [1]
+        self.delays = [5,5]
+class GithubIgnition():
+    def __init__(self):
+        self.name = "github_ignition"
+        self.timeout = 60
+        self.commands = [
+            "ros2 launch ign_moveit2 example_place.launch.py",
+        ]
+        self.delays = []
 class WebotsThrow():
     def __init__(self):
         self.name = "webots_throw"
@@ -133,23 +146,27 @@ class GazeboThrow():
 class IgnitionThrow():
     def __init__(self):
         self.name = "ignition_throw"
+        self.timeout = 60
+        self.commands = [
+            "ros2 launch simple_arm ign_throw.launch.py",
+            "ros2 launch simple_move_group run_move_group.launch.py",
+            "ros2 launch simple_arm ign_throw_moveit.launch.py",
+        ]
+        self.delays = [5,5]
+class GithubIgnitionThrow():
+    def __init__(self):
+        self.name = "github_ignition_throw"
         self.timeout = 20
         self.commands = [
             "ros2 launch ign_moveit2 example_throw.launch.py",
-            "echo timeout for recorder"
         ]
-        self.delays = [1]
+        self.delays = []
 
 def handler(signum, frame):
     raise Exception("TimeOut")
 
 def run(sim, idx):
     path = "/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/"
-    try:
-        os.mkdir(path+f"{sim.name}")
-        os.mkdir(path+f"{sim.name}/log")
-    except:
-        print("Folder exist. Overwriting...")
     if os.path.exists(path+f"{sim.name}/run.txt"):
         os.remove(path+f"{sim.name}/run.txt")
     r, w = Pipe()
@@ -188,23 +205,38 @@ def run(sim, idx):
             
 
 def main(args=None):
-    if len(sys.argv) == 1 or sys.argv[1] == "webots":
+    if len(sys.argv) == 1:
+        raise Exception("Missing arguments")
+    if sys.argv[1] == "webots":
         sim = Webots()
-    elif sys.argv[1] == "gazebo_throw":
-        sim = GazeboThrow()
     elif sys.argv[1] == "webots_throw":
         sim = WebotsThrow()
-    elif sys.argv[1] == "ignition_throw":
-        sim = IgnitionThrow()
     elif sys.argv[1] == "gazebo":
         sim = Gazebo()
-    else:
+    elif sys.argv[1] == "gazebo_throw":
+        sim = GazeboThrow()
+    elif sys.argv[1] == "github_ignition":
+        sim = GithubIgnition()
+    elif sys.argv[1] == "github_ignition_throw":
+        sim = GithubIgnitionThrow()
+    elif sys.argv[1] == "ignition":
         sim = Ignition()
+    elif sys.argv[1] == "ignition_throw":
+        sim = IgnitionThrow()
 
     if len(sys.argv) == 3:
         iteration = int(sys.argv[2])
     else:
         iteration = 1
+    path = "/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/"
+    try:
+        os.mkdir(path+f"{sim.name}")
+        os.mkdir(path+f"{sim.name}/log")
+        os.mkdir(path+f"{sim.name}/ram")
+        os.mkdir(path+f"{sim.name}/cpu")
+    except Exception as e:
+        print(e)
+        print("Folder exist. Overwriting...")
 
     for idx in range(iteration):
         run(sim, idx)

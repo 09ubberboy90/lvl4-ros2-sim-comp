@@ -20,11 +20,12 @@ class ProcMonitor(Node):
         self.ram_dict = defaultdict(list)
         self.allowed = allowed
         self.procs = {}
+        print("start")
+        self.counter = 0
         self.update_missing()
         self.timer = self.create_timer(0.1, self.animate)
         self.idx = idx
         self.sim_name = sim_name
-        self.counter = 0
         
     def update_missing(self):
         self.missing = [el for el in self.allowed if el not in self.procs.keys()]
@@ -42,6 +43,7 @@ class ProcMonitor(Node):
                 if counter != 0:
                     p = p+"_"+str(counter)
                 self.procs[p] = proc 
+                proc.cpu_percent() # discard value
                 proc.cpu_percent() # discard value
 
 
@@ -65,12 +67,6 @@ class ProcMonitor(Node):
 
     def dump_values(self):
         path = "/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/"
-        try:
-            os.mkdir(path+f"{self.sim_name}/ram")
-            os.mkdir(path+f"{self.sim_name}/cpu")
-        except:
-            print("Folder exist. Overwriting...")
-
         with open(path + f"{self.sim_name}/cpu/cpu_{self.idx}.csv", "w") as f:
             for (name, pid), el in self.cpu_dict.items():
                 f.write(f"{name},{','.join(str(v) for v in el)}\n")

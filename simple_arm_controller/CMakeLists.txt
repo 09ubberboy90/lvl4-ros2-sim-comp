@@ -24,7 +24,6 @@ find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(sim_action_server REQUIRED)
-find_package(simple_interface REQUIRED)
 find_package(ignition-transport9 REQUIRED)
 find_package(gazebo_msgs REQUIRED)
 install(DIRECTORY
