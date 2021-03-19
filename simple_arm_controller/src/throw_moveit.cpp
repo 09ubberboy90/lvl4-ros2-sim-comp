@@ -16,7 +16,7 @@ bool wait_for_exec(moveit::planning_interface::MoveGroupInterface *move_group, s
     {
         // 10 tries to plan otherwise give up
         bool success = (move_group->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        RCLCPP_INFO(server->get_logger(), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
 
         if (success)
         {
@@ -26,7 +26,7 @@ bool wait_for_exec(moveit::planning_interface::MoveGroupInterface *move_group, s
         }
     }
     auto pose = move_group->getPoseTarget().pose.position;
-    RCLCPP_ERROR(server->get_logger(), "Failed to find a valid path to %f, %f, %f", pose.x, pose.y, pose.z);
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to find a valid path to %f, %f, %f", pose.x, pose.y, pose.z);
     throw "Couldn't plan a path";
     return false;
 }
@@ -136,6 +136,9 @@ int main(int argc, char **argv)
     if (use_spawn_obj)
     {
 
+        hand_move_group.setMaxVelocityScalingFactor(0.5);
+        hand_move_group.setMaxAccelerationScalingFactor(0.5);
+
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
         if (gazebo)
         {
@@ -210,6 +213,8 @@ int main(int argc, char **argv)
                            0.8};
 
         move_group.setJointValueTarget(joints);
+        hand_move_group.setMaxVelocityScalingFactor(1.0);
+        hand_move_group.setMaxAccelerationScalingFactor(1.0);
 
         auto current_state = hand_move_group.getCurrentState();
         float gripper_pose = (float)gripper_state::opened / 1000;
@@ -224,7 +229,7 @@ int main(int argc, char **argv)
         {
             // 10 tries to plan otherwise give up
             bool success = (hand_move_group.plan(gripper_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            RCLCPP_INFO(server->get_logger(), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
 
             if (success)
             {        
@@ -238,7 +243,7 @@ int main(int argc, char **argv)
         {
             // 10 tries to plan otherwise give up
             bool success = (move_group.plan(arm_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            RCLCPP_INFO(server->get_logger(), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
 
             if (success)
             {
@@ -247,29 +252,53 @@ int main(int argc, char **argv)
         }
 
         auto gripper_traj = gripper_plan.trajectory_.joint_trajectory;
-        auto arm_traj = arm_plan.trajectory_.joint_trajectory;
+        auto arm_traj = &arm_plan.trajectory_.joint_trajectory;
 
         // Merge hand opening into arm trajectory, such that it is timed for release (at 50%)
-        auto release_index = round(0.5*arm_traj.points.size());
-        std::cout << arm_traj.joint_names.size() << std::endl;
+        auto release_index = round(0.5*arm_traj->points.size());
         for (auto finger_joint : gripper_traj.joint_names)
         {
-            arm_traj.joint_names.push_back(finger_joint);
-        }
-        std::cout << arm_traj.joint_names.size() << std::endl;
-
-        while (arm_traj.points[release_index].effort.size() < 9){
-            arm_traj.points[release_index].effort.push_back(0.0);
+            arm_traj->joint_names.push_back(finger_joint);
         }
 
-        for(int i = 0; i < 2; i++)
-        { 
-            arm_traj.points[release_index].positions.push_back(
-                gripper_traj.points[gripper_traj.points.size()-1].positions[i]);
-            arm_traj.points[release_index].velocities.push_back(
-                gripper_traj.points[gripper_traj.points.size()-1].velocities[i]);
-            arm_traj.points[release_index].accelerations.push_back(
-                gripper_traj.points[gripper_traj.points.size()-1].accelerations[i]);
+        while (arm_traj->points[release_index].effort.size() < 9){
+            arm_traj->points[release_index].effort.push_back(0.0);
+        }
+        for (int j = 0; j < arm_traj->points.size(); j++)
+        {
+            for(int i = 0; i < 2; i++)
+            { 
+                if (j > release_index)
+                {
+                    arm_traj->points[j].positions.push_back(
+                        gripper_traj.points[gripper_traj.points.size()-1].positions[i]);
+                    arm_traj->points[j].velocities.push_back(
+                        gripper_traj.points[gripper_traj.points.size()-1].velocities[i]);
+                    arm_traj->points[j].accelerations.push_back(
+                        gripper_traj.points[gripper_traj.points.size()-1].accelerations[i]);
+                }
+                else
+                {
+                    arm_traj->points[j].positions.push_back(
+                        gripper_traj.points[0].positions[i]);
+                    arm_traj->points[j].velocities.push_back(
+                        gripper_traj.points[0].velocities[i]);
+                    arm_traj->points[j].accelerations.push_back(
+                        gripper_traj.points[0].accelerations[i]);
+                }
+            }
+        }
+        for (int j = 0; j < gripper_traj.points.size(); j++)
+        {
+            for(int i = 0; i < 2; i++)
+            { 
+                arm_traj->points[release_index+j].positions.push_back(
+                    gripper_traj.points[j].positions[i]);
+                arm_traj->points[release_index+j].velocities.push_back(
+                    gripper_traj.points[j].velocities[i]);
+                arm_traj->points[release_index+j].accelerations.push_back(
+                    gripper_traj.points[j].accelerations[i]);
+            }
         }
 
         std::thread([&move_group, arm_plan]() { move_group.execute(arm_plan); }).detach();
