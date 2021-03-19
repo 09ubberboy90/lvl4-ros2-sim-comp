@@ -131,6 +131,10 @@ int main(int argc, char **argv)
     if (use_spawn_obj)
     {
         auto start_pose = move_group.getCurrentPose().pose;
+        move_group.setMaxVelocityScalingFactor(1.0);
+        move_group.setMaxAccelerationScalingFactor(1.0);
+        hand_move_group.setMaxVelocityScalingFactor(0.5);
+        hand_move_group.setMaxAccelerationScalingFactor(0.5);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
         if (gazebo)

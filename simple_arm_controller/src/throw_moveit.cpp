@@ -136,8 +136,8 @@ int main(int argc, char **argv)
     if (use_spawn_obj)
     {
 
-        hand_move_group.setMaxVelocityScalingFactor(0.5);
-        hand_move_group.setMaxAccelerationScalingFactor(0.5);
+        move_group.setMaxVelocityScalingFactor(0.5);
+        move_group.setMaxAccelerationScalingFactor(0.5);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
         if (gazebo)
@@ -213,8 +213,8 @@ int main(int argc, char **argv)
                            0.8};
 
         move_group.setJointValueTarget(joints);
-        hand_move_group.setMaxVelocityScalingFactor(1.0);
-        hand_move_group.setMaxAccelerationScalingFactor(1.0);
+        move_group.setMaxVelocityScalingFactor(1.0);
+        move_group.setMaxAccelerationScalingFactor(1.0);
 
         auto current_state = hand_move_group.getCurrentState();
         float gripper_pose = (float)gripper_state::opened / 1000;

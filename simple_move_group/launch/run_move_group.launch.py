@@ -37,6 +37,11 @@ def generate_launch_description():
     kinematics_yaml = load_yaml('moveit_resources_panda_moveit_config', 'config/kinematics.yaml')
     robot_description_kinematics = { 'robot_description_kinematics' : kinematics_yaml }
 
+    # Joint limits
+    joint_limits_yaml = load_yaml('panda_moveit2_config',
+                                  'config/joint_limits.yaml')
+    joint_limits = {'robot_description_planning': joint_limits_yaml}
+
     # Planning Functionality
     ompl_planning_pipeline_config = { 'move_group' : {
         'planning_plugin' : 'ompl_interface/OMPLPlanner',
@@ -70,6 +75,7 @@ def generate_launch_description():
                                            ompl_planning_pipeline_config,
                                            trajectory_execution,
                                            moveit_controllers,
+                                           joint_limits,
                                            planning_scene_monitor_parameters])
 
     # RViz
