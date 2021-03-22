@@ -20,7 +20,6 @@ class ProcMonitor(Node):
         self.ram_dict = defaultdict(list)
         self.allowed = allowed
         self.procs = {}
-        print("start")
         self.counter = 0
         self.update_missing()
         self.timer = self.create_timer(0.1, self.animate)
@@ -105,7 +104,6 @@ allowed_webots = [
     "static_transform_publisher",
     "webots",
     "webots-bin",
-    "webots_robotic_",
     "moveit_collision",
     "run_recording",
     "moveit_controller",

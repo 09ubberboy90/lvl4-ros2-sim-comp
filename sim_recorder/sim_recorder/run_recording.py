@@ -5,7 +5,7 @@ import sys
 import psutil
 from multiprocessing import Process, Pipe, Queue, Event
 import signal
-
+import io
 try:
     import proc_monitor
     import proc_monitor_gui
@@ -53,7 +53,6 @@ def run_recorder(q, interrupt_event, simulator, idx, gui=False):
         if gui:
             proc_monitor_gui.run(simulator, idx=idx)  # launch recording
         else:
-            print(simulator)
             proc_monitor.run(simulator,idx=idx)
     except:
         q.put("Exit")
@@ -73,7 +72,6 @@ def start_proces(delay, procs, q):
     delay.append(0) # Out of bound exception prevention
     delay.append(0) # Out of bound exception prevention
     for idx, p in enumerate(procs):
-        print(p.name)
         p.start()
         time.sleep(delay[idx])
 
@@ -86,7 +84,7 @@ def start_proces(delay, procs, q):
 class Webots():
     def __init__(self):
         self.name = "webots"
-        self.timeout = 60
+        self.timeout = 30
         self.commands = [
             "ros2 launch webots_simple_arm pick_place.launch.py",
             "ros2 launch webots_simple_arm collision_webots.launch.py",
@@ -96,7 +94,7 @@ class Webots():
 class Gazebo():
     def __init__(self):
         self.name = "gazebo"
-        self.timeout = 60
+        self.timeout = 30
         self.commands = [
             "ros2 launch simple_arm gazebo.launch.py",
             "ros2 launch simple_move_group run_move_group.launch.py",
@@ -111,7 +109,7 @@ class Ignition():
         self.commands = [
             "ros2 launch simple_arm ign_place.launch.py",
             "ros2 launch simple_move_group run_move_group.launch.py",
-            "ros2 launch simple_arm ign_throw_moveit.launch.py",
+            "ros2 launch simple_arm moveit_ign.launch.py",
         ]
         self.delays = [5,5]
 class GithubIgnition():
@@ -125,7 +123,7 @@ class GithubIgnition():
 class WebotsThrow():
     def __init__(self):
         self.name = "webots_throw"
-        self.timeout = 60
+        self.timeout = 40
         self.commands = [
             "ros2 launch webots_simple_arm pick_place.launch.py",
             "ros2 launch webots_simple_arm throw_collision.launch.py",
@@ -135,7 +133,7 @@ class WebotsThrow():
 class GazeboThrow():
     def __init__(self):
         self.name = "gazebo_throw"
-        self.timeout = 60
+        self.timeout = 40
         self.commands = [
             "ros2 launch simple_arm gazebo.launch.py",
             "ros2 launch simple_move_group run_move_group.launch.py",
@@ -167,8 +165,6 @@ def handler(signum, frame):
 
 def run(sim, idx):
     path = "/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/"
-    if os.path.exists(path+f"{sim.name}/run.txt"):
-        os.remove(path+f"{sim.name}/run.txt")
     r, w = Pipe()
     q = Queue()
     reader = os.fdopen(r.fileno(), 'r')
@@ -178,6 +174,7 @@ def run(sim, idx):
     pids = start_proces(sim.delays, procs, q)
     signal.signal(signal.SIGALRM, handler)
     signal.alarm(sim.timeout)
+    start_time = time.time()
     with open(path+f"{sim.name}/log/{idx}.txt", "w") as f,\
          open(path+f"{sim.name}/run.txt", "a") as out:
         try:    
@@ -185,26 +182,28 @@ def run(sim, idx):
                 text = reader.readline()
                 f.write(text)
                 if "Task completed Succesfully" in text:
-                    print(f"Completed for {idx}")
+                    print(f"Completed for {idx} in {time.time() - start_time }")
                     out.write(f"Completed for {idx}\n")
                     signal.alarm(0)
                     kill_proc_tree(pids, procs, interrupt_event)
-                    return
+                    return 1,0
                 if "Cube is not in bound" in text:
-                    print(f"Failed for {idx}")
+                    print(f"Failed for {idx} in {time.time() - start_time }")
                     out.write(f"Failed for {idx}\n")
                     signal.alarm(0)
                     kill_proc_tree(pids, procs, interrupt_event)
-                    return
+                    return 0,1
         except:
             print(f"Timeout for {idx}")
             out.write(f"Timeout for {idx}\n")
             f.write("Timeout")
             kill_proc_tree(pids, procs, interrupt_event)
-
+            return 0,0
             
 
 def main(args=None):
+    succ = 0
+    fail = 0
     if len(sys.argv) == 1:
         raise Exception("Missing arguments")
     if sys.argv[1] == "webots":
@@ -237,10 +236,14 @@ def main(args=None):
     except Exception as e:
         print(e)
         print("Folder exist. Overwriting...")
+    if os.path.exists(path+f"{sim.name}/run.txt"):
+        os.remove(path+f"{sim.name}/run.txt")
 
     for idx in range(iteration):
-        run(sim, idx)
-
+        a, b = run(sim, idx)
+        succ += a
+        fail += b
+    print(f"Success {succ}; Failure {fail}; Timeout {iteration-(succ + fail)}")
 
 
 if __name__ == "__main__":
