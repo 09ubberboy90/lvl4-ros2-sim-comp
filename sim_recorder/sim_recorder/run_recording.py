@@ -105,17 +105,17 @@ class Gazebo():
 class Ignition():
     def __init__(self):
         self.name = "ignition"
-        self.timeout = 60
+        self.timeout = 35
         self.commands = [
             "ros2 launch simple_arm ign_place.launch.py",
             "ros2 launch simple_move_group run_move_group.launch.py",
             "ros2 launch simple_arm moveit_ign.launch.py",
         ]
-        self.delays = [5,5]
+        self.delays = [1,5]
 class GithubIgnition():
     def __init__(self):
         self.name = "github_ignition"
-        self.timeout = 60
+        self.timeout = 25
         self.commands = [
             "ros2 launch ign_moveit2 example_place.launch.py",
         ]
@@ -144,17 +144,17 @@ class GazeboThrow():
 class IgnitionThrow():
     def __init__(self):
         self.name = "ignition_throw"
-        self.timeout = 60
+        self.timeout = 30
         self.commands = [
             "ros2 launch simple_arm ign_throw.launch.py",
             "ros2 launch simple_move_group run_move_group.launch.py",
             "ros2 launch simple_arm ign_throw_moveit.launch.py",
         ]
-        self.delays = [5,5]
+        self.delays = [1,5]
 class GithubIgnitionThrow():
     def __init__(self):
         self.name = "github_ignition_throw"
-        self.timeout = 20
+        self.timeout = 25
         self.commands = [
             "ros2 launch ign_moveit2 example_throw.launch.py",
         ]
@@ -181,15 +181,15 @@ def run(sim, idx):
             while True:
                 text = reader.readline()
                 f.write(text)
-                if "Task completed Succesfully" in text:
+                if "Task completed Succesfully" in text or "ODE INTERNAL ERROR" in text:
                     print(f"Completed for {idx} in {time.time() - start_time }")
-                    out.write(f"Completed for {idx}\n")
+                    out.write(f"Completed for {idx} in {time.time() - start_time }\n")
                     signal.alarm(0)
                     kill_proc_tree(pids, procs, interrupt_event)
                     return 1,0
                 if "Cube is not in bound" in text:
                     print(f"Failed for {idx} in {time.time() - start_time }")
-                    out.write(f"Failed for {idx}\n")
+                    out.write(f"Failed for {idx} in {time.time() - start_time }\n")
                     signal.alarm(0)
                     kill_proc_tree(pids, procs, interrupt_event)
                     return 0,1

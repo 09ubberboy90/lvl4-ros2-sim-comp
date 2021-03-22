@@ -175,8 +175,8 @@ int main(int argc, char **argv)
         goto_pose(&move_group, pose);
         move_group.setMaxVelocityScalingFactor(0.5);
         move_group.setMaxAccelerationScalingFactor(0.5);
-        hand_move_group.setMaxVelocityScalingFactor(1.0);
-        hand_move_group.setMaxAccelerationScalingFactor(1.0);
+        hand_move_group.setMaxVelocityScalingFactor(0.5);
+        hand_move_group.setMaxAccelerationScalingFactor(0.5);
 
         sensor_msgs::msg::JointState joints;
         joints.name = {"panda_joint1",
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
         auto arm_traj = &arm_plan.trajectory_.joint_trajectory;
 
         // Merge hand opening into arm trajectory, such that it is timed for release (at 50%)
-        auto release_index = round(0.5*arm_traj->points.size());
+        auto release_index = round(0.7*arm_traj->points.size());
         for (auto finger_joint : gripper_traj.joint_names)
         {
             arm_traj->joint_names.push_back(finger_joint);
@@ -284,6 +284,11 @@ int main(int argc, char **argv)
         move_group.execute(arm_plan);
         //move_group->asyncExecute(plan);
 
+        auto new_pose = pose_node->pose;
+        std::cout << new_pose.position.x << "," << pose.position.x << std::endl;
+        std::cout << new_pose.position.y << "," << pose.position.y << std::endl;
+        std::cout << new_pose.position.z << "," << pose.position.z << std::endl;
+
         // Move to default position
         joints.position = {0.0,
                            0.0,
@@ -293,11 +298,6 @@ int main(int argc, char **argv)
                            1.57,
                            0.79};
         goto_joint_pose(&move_group, joints);
-
-        auto new_pose = pose_node->pose;
-        std::cout << new_pose.position.x << "," << pose.position.x << std::endl;
-        std::cout << new_pose.position.y << "," << pose.position.y << std::endl;
-        std::cout << new_pose.position.z << "," << pose.position.z << std::endl;
 
         if ((new_pose.position.x < pose.position.x) || (pose.position.y + 0.1 < new_pose.position.y) || (pose.position.y - 0.1 > new_pose.position.y))
         {
