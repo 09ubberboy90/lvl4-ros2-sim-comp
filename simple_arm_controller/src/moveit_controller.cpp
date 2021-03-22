@@ -16,7 +16,7 @@ bool wait_for_exec(moveit::planning_interface::MoveGroupInterface *move_group, s
     {
         // 10 tries to plan otherwise give up
         bool success = (move_group->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        RCLCPP_INFO(server->get_logger(), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Plan %d %s", i, success ? "SUCCEEDED" : "FAILED");
 
         if (success)
         {
@@ -26,7 +26,7 @@ bool wait_for_exec(moveit::planning_interface::MoveGroupInterface *move_group, s
         }
     }
     auto pose = move_group->getPoseTarget().pose.position;
-    RCLCPP_ERROR(server->get_logger(), "Failed to find a valid path to %f, %f, %f", pose.x, pose.y, pose.z);
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to find a valid path to %f, %f, %f", pose.x, pose.y, pose.z);
     throw "Couldn't plan a path";
     return false;
 }
@@ -133,8 +133,8 @@ int main(int argc, char **argv)
         auto start_pose = move_group.getCurrentPose().pose;
         move_group.setMaxVelocityScalingFactor(1.0);
         move_group.setMaxAccelerationScalingFactor(1.0);
-        hand_move_group.setMaxVelocityScalingFactor(0.5);
-        hand_move_group.setMaxAccelerationScalingFactor(0.5);
+        hand_move_group.setMaxVelocityScalingFactor(1.0);
+        hand_move_group.setMaxAccelerationScalingFactor(1.0);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
         if (gazebo)
@@ -142,10 +142,16 @@ int main(int argc, char **argv)
             change_gripper(&hand_move_group, hand_server, gripper_state::opened);
             change_gripper(&hand_move_group, hand_server, gripper_state::closed); // fix gripper slightly to left
             change_gripper(&hand_move_group, hand_server, gripper_state::opened);
+            move_group.setMaxVelocityScalingFactor(0.5);
+            move_group.setMaxAccelerationScalingFactor(0.5);
+
         }
         else
         {
             change_gripper(&hand_move_group, server, gripper_state::opened);
+            move_group.setMaxVelocityScalingFactor(1.0);
+            move_group.setMaxAccelerationScalingFactor(1.0);
+
         }
 
         std::vector<std::string> targets = {"target"};
@@ -156,7 +162,8 @@ int main(int argc, char **argv)
 
         if (gazebo)
         {
-            pose.position.z += 0.13;
+            pose.position.z += 0.135;
+            // pose.position.y += 0.005;
         }
         else
         {
@@ -167,6 +174,9 @@ int main(int argc, char **argv)
         pose.orientation.y = q.y();
         pose.orientation.z = q.z();
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to object pose");
+        pose.position.z += 0.1; // approach
+        goto_pose(&move_group, server, pose);
+        pose.position.z -= 0.1; 
         goto_pose(&move_group, server, pose);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Closing hand");
@@ -175,6 +185,9 @@ int main(int argc, char **argv)
         std::this_thread::sleep_for(std::chrono::seconds(1));
         planning_scene_interface.applyCollisionObject(collision_object);
         std::this_thread::sleep_for(std::chrono::seconds(1));
+        hand_move_group.setMaxVelocityScalingFactor(0.1);
+        hand_move_group.setMaxAccelerationScalingFactor(0.1);
+
         //move_group.attachObject("target");
         if (gazebo)
         {
@@ -215,9 +228,6 @@ int main(int argc, char **argv)
         collision_objects = planning_scene_interface.getObjects(targets);
         collision_object = collision_objects["target"];
         auto new_pose = collision_object.primitive_poses[0];
-        std::cout << new_pose.position.x << "," << pose.position.x << std::endl;
-        std::cout << new_pose.position.y << "," << pose.position.y << std::endl;
-        std::cout << new_pose.position.z << "," << pose.position.z << std::endl;
 
         if ((new_pose.position.x < pose.position.x - 0.05) || (pose.position.x + 0.05 < new_pose.position.x))
         {

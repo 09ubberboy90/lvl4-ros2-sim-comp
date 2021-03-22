@@ -138,6 +138,8 @@ int main(int argc, char **argv)
 
         move_group.setMaxVelocityScalingFactor(0.5);
         move_group.setMaxAccelerationScalingFactor(0.5);
+        hand_move_group.setMaxVelocityScalingFactor(1.0);
+        hand_move_group.setMaxAccelerationScalingFactor(1.0);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
         if (gazebo)
@@ -171,6 +173,9 @@ int main(int argc, char **argv)
         pose.orientation.y = q.y();
         pose.orientation.z = q.z();
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to object pose");
+        pose.position.z += 0.1; // approach
+        goto_pose(&move_group, server, pose);
+        pose.position.z -= 0.1; 
         goto_pose(&move_group, server, pose);
 
         parameter_server->set_param(true);
@@ -178,6 +183,8 @@ int main(int argc, char **argv)
         std::this_thread::sleep_for(std::chrono::seconds(1));
         planning_scene_interface.applyCollisionObject(collision_object);
         std::this_thread::sleep_for(std::chrono::seconds(1));
+        hand_move_group.setMaxVelocityScalingFactor(0.1);
+        hand_move_group.setMaxAccelerationScalingFactor(0.1);
 
         // Close gripper
         change_gripper(&hand_move_group, server, gripper_state::closed);
@@ -205,7 +212,7 @@ int main(int argc, char **argv)
 
         // Arm trajectory
         joints.position= {0.0,
-                           1.0,
+                           0.9,
                            0.0,
                            -1.1,
                            0.0,
@@ -288,18 +295,18 @@ int main(int argc, char **argv)
                 }
             }
         }
-        for (int j = 0; j < gripper_traj.points.size(); j++)
-        {
-            for(int i = 0; i < 2; i++)
-            { 
-                arm_traj->points[release_index+j].positions.push_back(
-                    gripper_traj.points[j].positions[i]);
-                arm_traj->points[release_index+j].velocities.push_back(
-                    gripper_traj.points[j].velocities[i]);
-                arm_traj->points[release_index+j].accelerations.push_back(
-                    gripper_traj.points[j].accelerations[i]);
-            }
-        }
+        // for (int j = 0; j < gripper_traj.points.size(); j++)
+        // {
+        //     for(int i = 0; i < 2; i++)
+        //     { 
+        //         arm_traj->points[release_index+j].positions.push_back(
+        //             gripper_traj.points[j].positions[i]);
+        //         arm_traj->points[release_index+j].velocities.push_back(
+        //             gripper_traj.points[j].velocities[i]);
+        //         arm_traj->points[release_index+j].accelerations.push_back(
+        //             gripper_traj.points[j].accelerations[i]);
+        //     }
+        // }
 
         std::thread([&move_group, arm_plan]() { move_group.execute(arm_plan); }).detach();
         //move_group->asyncExecute(plan);
@@ -314,7 +321,18 @@ int main(int argc, char **argv)
                            1.57,
                            0.79};
         goto_joint_pose(&move_group, server, joints);
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Task completed Succesfully");
+        collision_objects = planning_scene_interface.getObjects(targets);
+        collision_object = collision_objects["target"];
+        auto new_pose = collision_object.primitive_poses[0];
+
+        if ((new_pose.position.x < pose.position.x) || (pose.position.y + 0.05 < new_pose.position.y) || (pose.position.y - 0.05 < new_pose.position.y))
+        {
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Cube is not in bound");
+        }
+        else
+        {
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Task completed Succesfully");
+        }
     }
     rclcpp::shutdown();
     return 0;
