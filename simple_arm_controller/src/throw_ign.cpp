@@ -206,9 +206,9 @@ int main(int argc, char **argv)
                            0.0,
                            0.0};
 
-        hand_arm_move_group.setJointValueTarget(joints);
-        hand_arm_move_group.setMaxVelocityScalingFactor(1.0);
-        hand_arm_move_group.setMaxAccelerationScalingFactor(1.0);
+        move_group.setJointValueTarget(joints);
+        move_group.setMaxVelocityScalingFactor(1.0);
+        move_group.setMaxAccelerationScalingFactor(1.0);
 
         auto current_state = hand_move_group.getCurrentState();
         float gripper_pose = (float)gripper_state::opened / 1000;
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
         for (int i = 0; i < 10; i++)
         {
             // 10 tries to plan otherwise give up
-            bool success = (hand_arm_move_group.plan(arm_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            bool success = (move_group.plan(arm_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
             if (success)
             {
@@ -248,29 +248,40 @@ int main(int argc, char **argv)
 
         // Merge hand opening into arm trajectory, such that it is timed for release (at 50%)
         auto release_index = round(0.5*arm_traj->points.size());
-        // for (auto finger_joint : gripper_traj.joint_names)
-        // {
-        //     arm_traj->joint_names.push_back(finger_joint);
-        // }
+        for (auto finger_joint : gripper_traj.joint_names)
+        {
+            arm_traj->joint_names.push_back(finger_joint);
+        }
 
-        // while (arm_traj->points[release_index].effort.size() < 9){
-        //     arm_traj->points[release_index].effort.push_back(0.0);
-        // }
-
+        while (arm_traj->points[release_index].effort.size() < 9){
+            arm_traj->points[release_index].effort.push_back(0.0);
+        }
         for (int j = 0; j < arm_traj->points.size(); j++)
         {
             for(int i = 0; i < 2; i++)
             { 
                 if (j > release_index)
                 {
-                    arm_traj->points[j].positions[i] = gripper_traj.points[gripper_traj.points.size()-1].positions[i];
-                    arm_traj->points[j].velocities[i] = gripper_traj.points[gripper_traj.points.size()-1].velocities[i];
-                    arm_traj->points[j].accelerations[i] = gripper_traj.points[gripper_traj.points.size()-1].accelerations[i];
+                    arm_traj->points[j].positions.push_back(
+                        gripper_traj.points[gripper_traj.points.size()-1].positions[i]);
+                    arm_traj->points[j].velocities.push_back(
+                        gripper_traj.points[gripper_traj.points.size()-1].velocities[i]);
+                    arm_traj->points[j].accelerations.push_back(
+                        gripper_traj.points[gripper_traj.points.size()-1].accelerations[i]);
+                }
+                else
+                {
+                    arm_traj->points[j].positions.push_back(
+                        gripper_traj.points[0].positions[i]);
+                    arm_traj->points[j].velocities.push_back(
+                        gripper_traj.points[0].velocities[i]);
+                    arm_traj->points[j].accelerations.push_back(
+                        gripper_traj.points[0].accelerations[i]);
                 }
             }
         }
 
-        hand_arm_move_group.execute(arm_plan);
+        move_group.execute(arm_plan);
         //move_group->asyncExecute(plan);
 
         // Move to default position

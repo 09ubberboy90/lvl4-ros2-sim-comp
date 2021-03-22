@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 <sdf version='1.7'>
     <world name='empty'>
         <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics">
@@ -56,7 +56,7 @@
             </attenuation>
             <direction>-0.5 0.1 -0.9</direction>
         </light>
-        
+
         <scene>
             <ambient>0.4 0.4 0.4 1</ambient>
             <grid>false</grid>
@@ -97,7 +97,7 @@
 
         <!-- Other boxes, that the first box is thrown onto -->
         <model name="throwing_object">
-            <pose>0.2 0 0.65 0 0 0</pose>
+            <pose>0.3 0 0.65 0 0 0</pose>
             <link name="throwing_object_link">
                 <inertial>
                     <inertia>

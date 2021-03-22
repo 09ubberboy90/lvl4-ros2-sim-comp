@@ -64,7 +64,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'ign_args',
-            default_value=[os.path.join(pkg_share, 'worlds', 'panda_place.sdf')],
+            default_value=[os.path.join(pkg_share, 'worlds', 'panda_place.sdf'), " -r"],
             description='Ignition Gazebo arguments'),
         gazebo,
         ign_pub,

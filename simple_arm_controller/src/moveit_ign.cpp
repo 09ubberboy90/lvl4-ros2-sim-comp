@@ -20,7 +20,7 @@ bool wait_for_exec(moveit::planning_interface::MoveGroupInterface *move_group)
         bool success = (move_group->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         if (success)
         {
-            std::thread([move_group, plan]() { move_group->execute(plan); }).detach();
+            move_group->execute(plan);
             //move_group->asyncExecute(plan);
             return true;
         }
@@ -46,11 +46,6 @@ bool goto_pose(moveit::planning_interface::MoveGroupInterface *move_group, geome
     move_group->setPoseTarget(pose);
     return wait_for_exec(move_group);
 }
-bool goto_joint_pose(moveit::planning_interface::MoveGroupInterface *move_group, sensor_msgs::msg::JointState joints)
-{
-    move_group->setJointValueTarget(joints);
-    return wait_for_exec(move_group);
-}
 
 class GetPose : public rclcpp::Node
 {
@@ -58,7 +53,7 @@ public:
     GetPose() : Node("get_pose")
     {
         subscription_ = this->create_subscription<geometry_msgs::msg::Pose>(
-            "/joint_states", 10, std::bind(&GetPose::listener_callback, this, std::placeholders::_1));
+            "/model/throwing_object/pose", 10, std::bind(&GetPose::listener_callback, this, std::placeholders::_1));
 
     };
     geometry_msgs::msg::Pose pose;
@@ -67,6 +62,8 @@ private:
     void listener_callback(const geometry_msgs::msg::Pose::SharedPtr msg)
     {
         pose = *msg;
+        pose.position.z += 0.09;
+
     }
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr subscription_;
 };
@@ -91,6 +88,8 @@ int main(int argc, char **argv)
 
     moveit::planning_interface::MoveGroupInterface move_group(move_group_node, PLANNING_GROUP);
     moveit::planning_interface::MoveGroupInterface hand_move_group(move_group_node, "hand");
+    moveit::planning_interface::PlanningSceneInterface planning_scene_interface("");
+
     move_group.allowReplanning(true);
     move_group.setNumPlanningAttempts(10);
 
@@ -104,12 +103,51 @@ int main(int argc, char **argv)
     // Planning to a Pose goal
     if (use_spawn_obj)
     {
+        auto pose = pose_node->pose;
+        hand_move_group.setMaxVelocityScalingFactor(1.0);
+        hand_move_group.setMaxAccelerationScalingFactor(1.0);
+        move_group.setMaxVelocityScalingFactor(0.5);
+        move_group.setMaxAccelerationScalingFactor(0.5);
+
+        moveit_msgs::msg::CollisionObject collision_object;
+        collision_object.header.frame_id = move_group.getPlanningFrame();
+
+        // The id of the object is used to identify it.
+        collision_object.id = "box1";
+
+        // Define a box to add to the world.
+        shape_msgs::msg::SolidPrimitive primitive;
+        primitive.type = primitive.BOX;
+        primitive.dimensions.resize(3);
+        primitive.dimensions[0] = 0.9;
+        primitive.dimensions[1] = 0.9;
+        primitive.dimensions[2] = 0.5;
+
+        geometry_msgs::msg::Pose box_pose;
+        box_pose.orientation.w = 1.0;
+        box_pose.position.x = 0.6;
+        box_pose.position.y = 0;
+        box_pose.position.z = -0.35;
+        box_pose.position.z += primitive.dimensions[1] / 2;
+
+        collision_object.primitives.push_back(primitive);
+        collision_object.primitive_poses.push_back(box_pose);
+        collision_object.operation = collision_object.ADD;
+
+        std::vector<moveit_msgs::msg::CollisionObject> collision_objects;
+        collision_objects.push_back(collision_object);
+
+
+        // Now, let's add the collision object into the world
+        planning_scene_interface.addCollisionObjects(collision_objects);
+
         auto start_pose = move_group.getCurrentPose().pose;
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
+
         change_gripper(&hand_move_group, gripper_state::opened);
 
-        auto pose = pose_node->pose;
+        pose = pose_node->pose;
         Quaternionf q = AngleAxisf(3.14, Vector3f::UnitX()) * AngleAxisf(0, Vector3f::UnitY()) * AngleAxisf(0.785, Vector3f::UnitZ());
 
         pose.orientation.w = q.w();
@@ -117,6 +155,15 @@ int main(int argc, char **argv)
         pose.orientation.y = q.y();
         pose.orientation.z = q.z();
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to object pose");
+        pose.position.z += 0.1; // approach
+        goto_pose(&move_group, pose);
+
+        move_group.setMaxVelocityScalingFactor(0.1);
+        move_group.setMaxAccelerationScalingFactor(0.1);
+        hand_move_group.setMaxVelocityScalingFactor(0.1);
+        hand_move_group.setMaxAccelerationScalingFactor(0.1);
+
+        pose.position.z -= 0.09; // approach
         goto_pose(&move_group, pose);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Closing hand");
@@ -133,16 +180,18 @@ int main(int argc, char **argv)
         // pose.position.z -= 0.1;
         // goto_pose(&move_group, server, pose);
 
+        hand_move_group.setMaxVelocityScalingFactor(1.0);
+        hand_move_group.setMaxAccelerationScalingFactor(1.0);
+
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening Hand");
         change_gripper(&hand_move_group,  gripper_state::opened);
 
+        move_group.setMaxVelocityScalingFactor(0.5);
+        move_group.setMaxAccelerationScalingFactor(0.5);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going to start pose");
         goto_pose(&move_group,  start_pose);
         auto new_pose = pose_node->pose;
-        std::cout << new_pose.position.x << "," << pose.position.x << std::endl;
-        std::cout << new_pose.position.y << "," << pose.position.y << std::endl;
-        std::cout << new_pose.position.z << "," << pose.position.z << std::endl;
 
         if ((new_pose.position.x < pose.position.x - 0.05) || (pose.position.x + 0.05 < new_pose.position.x))
         {
