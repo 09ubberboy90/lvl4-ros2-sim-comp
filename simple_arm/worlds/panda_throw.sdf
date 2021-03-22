@@ -8,7 +8,6 @@
         </plugin>
         <plugin name='ignition::gazebo::systems::SceneBroadcaster' filename='ignition-gazebo-scene-broadcaster-system' />
         <plugin name='ignition::gazebo::systems::UserCommands' filename='ignition-gazebo-user-commands-system' />
-        <plugin name='ignition::gazebo::systems::Contact' filename='ignition-gazebo-contact-system' />
         <gui fullscreen='0'>
             <plugin name='3D View' filename='GzScene3D'>
                 <ignition-gui>
@@ -26,21 +25,7 @@
                 <background_color>0.8 0.8 0.8 1.0</background_color>
                 <camera_pose>0.5 -1.1 1.8 0 0.78539816 1.5707963</camera_pose>
             </plugin>
-            <plugin name='World control' filename='WorldControl'>
-                <ignition-gui>
-                    <title>World control</title>
-                    <property type='bool' key='showTitleBar'>0</property>
-                    <property type='bool' key='resizable'>0</property>
-                    <property type='double' key='height'>72</property>
-                    <property type='double' key='width'>121</property>
-                    <property type='double' key='z'>1</property>
-                    <anchor line='left' target='window' target_line='left' />
-                    <anchor line='bottom' target='window' target_line='bottom' />
-                </ignition-gui>
-                <play_pause>1</play_pause>
-                <step>1</step>
-                <start_paused>0</start_paused>
-            </plugin>
+            
         </gui>
         <light type="directional" name="sun">
             <cast_shadows>true</cast_shadows>

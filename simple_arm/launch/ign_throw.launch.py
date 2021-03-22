@@ -29,8 +29,9 @@ def generate_launch_description():
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_ros_ign_gazebo, 'launch', 'ign_gazebo.launch.py'),
-        ),)
+            os.path.join(pkg_ros_ign_gazebo, 'launch', 'ign_gazebo.launch.py'),            
+
+        ))
 
     robot_description_config = load_file(
         'ur_configs', 'urdf/panda/panda_arm_hand.urdf')
@@ -64,7 +65,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'ign_args',
-            default_value=[os.path.join(pkg_share, 'worlds', 'panda_throw.sdf')],
+            default_value=[os.path.join(pkg_share, 'worlds', 'panda_throw.sdf'), " -r"],
             description='Ignition Gazebo arguments'),
         gazebo,
         ign_pub,
