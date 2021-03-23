@@ -178,6 +178,11 @@ def create_figure(figname, printing=False):
         legend2 = axs.legend([lines[-1], pmark],['Average Runtime', "Failure Only"], loc="upper right", bbox_to_anchor=(1,1.1))
         axs.add_artist(legend1)
         axs.set_xticks(list(axs.get_xticks())[1:-1] + [mean])
+        labels = axs.get_xticklabels()
+        for idx, el in enumerate(axs.get_xticks()):
+            labels[idx] = f"{el:.2f}"
+        labels[-1] = f"\n{mean:.2f}"
+        axs.set_xticklabels(labels)
 
         if printing:
             with warnings.catch_warnings():
