@@ -223,76 +223,6 @@
     <child link="panda_link8"/>
     <axis xyz="0 0 0"/>
   </joint>
-  <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>panda_joint1</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>0.05</i_gain>
-    <d_gain>0.1</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
-  <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>panda_joint2</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>0.05</i_gain>
-    <d_gain>0.1</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
-  <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>panda_joint3</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>0.05</i_gain>
-    <d_gain>0.1</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
-  <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>panda_joint4</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>0.05</i_gain>
-    <d_gain>0.1</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
-  <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>panda_joint5</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>0.05</i_gain>
-    <d_gain>0.1</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
-  <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>panda_joint6</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>0.05</i_gain>
-    <d_gain>0.1</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
-  <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>panda_joint7</joint_name>
-    <p_gain>20</p_gain>
-    <i_gain>0.05</i_gain>
-    <d_gain>0.1</d_gain>
-    <i_max>1</i_max>
-    <i_min>-1</i_min>
-    <cmd_max>1000</cmd_max>
-    <cmd_min>-1000</cmd_min>
-  </plugin>
   <joint name="panda_hand_joint" type="fixed">
     <parent link="panda_link8"/>
     <child link="panda_hand"/>
@@ -419,6 +349,7 @@
     <material>Gazebo/Grey</material>
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>
+
   </gazebo>
   <gazebo reference="panda_leftfinger">
     <material>Gazebo/Grey</material>
