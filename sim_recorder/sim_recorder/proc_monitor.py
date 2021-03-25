@@ -20,58 +20,66 @@ class ProcMonitor(Node):
         self.ram_dict = defaultdict(list)
         self.allowed = allowed
         self.procs = {}
+        self.pids = {}
         self.counter = 0
+        self.current_length = 0
         self.update_missing()
         self.timer = self.create_timer(0.1, self.animate)
         self.idx = idx
         self.sim_name = sim_name
         
     def update_missing(self):
-        self.missing = [el for el in self.allowed if el not in self.procs.keys()]
+        length =  len(self.procs.keys())
         if self.counter < 10:
-            print(self.missing)
-            self.counter += 1 
-        for proc in psutil.process_iter():
-            p = proc.name()
-            if p in self.missing:
-                new_p = p
-                counter = 0
-                while new_p in self.procs.keys():
-                    counter += 1
-                    new_p = new_p + "_" + str(counter)
-                if counter != 0:
-                    p = p+"_"+str(counter)
-                self.procs[p] = proc 
-                proc.cpu_percent() # discard value
-                proc.cpu_percent() # discard value
+            if self.current_length >= length:
+                self.counter += 1 
+            else:
+                self.counter = 0
+                self.current_length = length
+
+            for proc in psutil.process_iter():
+                p = proc.name()
+                if p in self.allowed and proc.pid not in self.procs.keys():
+                    self.procs[proc.pid] = proc 
+                    self.pids[proc.pid] = proc.name()
+                    proc.cpu_percent() # discard value
+                    proc.cpu_percent() # discard value
 
 
     def animate(self):
-        if self.missing:
-            self.update_missing()
-        for name, p in self.procs.items():
+        self.update_missing()            
+        for pid, p in self.procs.items():
             try:
                 with p.oneshot():
                     cpu_usage = p.cpu_percent()
                     if cpu_usage > 2400:
                         print("Error : High Cpu Usage")
                         cpu_usage = 2400
-                    if len(self.cpu_dict[(name, p.pid)]) == 0 and cpu_usage > 300:
-                        cpu_usage = 300
                     ram_usage = p.memory_info().rss / (1024*1024)
-                    self.cpu_dict[(name, p.pid)].append(cpu_usage)
-                    self.ram_dict[(name, p.pid)].append(ram_usage)
+                    self.cpu_dict[pid].append(cpu_usage)
+                    self.ram_dict[pid].append(ram_usage)
             except:
                 pass
 
     def dump_values(self):
+        self.name = {}
+        for pid, name in self.pids.items():
+            new_p = name
+            counter = 0
+            while new_p in self.name.keys():
+                counter += 1
+                new_p = new_p + "_" + str(counter)
+            if counter != 0:
+                name = name+"_"+str(counter)
+            self.name[pid] = name
+
         path = "/home/ubb/Documents/PersonalProject/VrController/sim_recorder/data/"
         with open(path + f"{self.sim_name}/cpu/cpu_{self.idx}.csv", "w") as f:
-            for (name, pid), el in self.cpu_dict.items():
-                f.write(f"{name},{','.join(str(v) for v in el)}\n")
+            for pid, el in self.cpu_dict.items():
+                f.write(f"{self.name[pid]},{','.join(str(v) for v in el)}\n")
         with open(path + f"{self.sim_name}/ram/ram_{self.idx}.csv", "w") as f:
-            for (name, pid), el in self.ram_dict.items():
-                f.write(f"{name},{','.join(str(v) for v in el)}\n")
+            for pid, el in self.ram_dict.items():
+                f.write(f"{self.name[pid]},{','.join(str(v) for v in el)}\n")
         sys.exit(0)
 
 

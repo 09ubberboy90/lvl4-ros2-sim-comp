@@ -325,7 +325,7 @@ int main(int argc, char **argv)
         collision_object = collision_objects["target"];
         auto new_pose = collision_object.primitive_poses[0];
 
-        if ((new_pose.position.x < pose.position.x) || (pose.position.y + 0.05 < new_pose.position.y) || (pose.position.y - 0.05 < new_pose.position.y))
+        if ((new_pose.position.x < pose.position.x) || (pose.position.y + 0.1 < new_pose.position.y) || (pose.position.y - 0.1 > new_pose.position.y))
         {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Cube is not in bound");
         }

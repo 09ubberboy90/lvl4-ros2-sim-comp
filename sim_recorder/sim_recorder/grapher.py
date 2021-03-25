@@ -48,7 +48,7 @@ for key,el in types.items():
             for lines in f.readlines():
                 line = lines.split(",")
                 p = line[0]
-                if p == "ruby":
+                if "ruby" in p:
                     p = "ignition"
                 val = line[1:]
                 val = [float(x) for x in val]
@@ -90,7 +90,10 @@ with open(os.path.join(os.path.dirname(__file__),"../data", folder, "run.txt")) 
             if float(splitted[4]) > fmaxtime:
                 fmaxtime = float(splitted[4])
 
-    mean = runtime/total
+    if total != 0:
+        mean = runtime/total
+    else:
+        mean = 0
     mean_square = 0
     f.seek(0)
     for el in f.readlines():
@@ -100,8 +103,8 @@ with open(os.path.join(os.path.dirname(__file__),"../data", folder, "run.txt")) 
             mean_square += pow(val-mean, 2)
     stddev = sqrt( mean_square / total)
 
-print(f"\tName & Success & Failure & Timeout & Average Runtime & Standart Deviation\\\\")
-print(f"\t{folder} & {success} & {failure} & {150-(success + failure)} & {mean:.2f} & {stddev:.2f} \\\\")
+print(f"Name & Success & Failure & Timeout & Average Runtime & Standart Deviation\\\\")
+print(f"{folder} & {success} & {failure} & {150-(success + failure)} & {mean:.2f} & {stddev:.2f} \\\\")
 def create_figure(figname, printing=False):
 
     fig, axs = plt.subplots(2,figsize=(12,8) )
@@ -155,7 +158,7 @@ def create_figure(figname, printing=False):
             axs.fill_between(x, lower[0], high[0], alpha = 0.5, interpolate=False,color=color)
             axs.set_xlabel("Time (s)")
             if type == "ram":
-                axs.set_ylabel("RAM usage (Mb)")
+                axs.set_ylabel("RAM usage (MB)")
                 axs.set_title("RAM usage against time")
             else:
                 axs.set_title("CPU usage against time")
@@ -193,9 +196,9 @@ def create_figure(figname, printing=False):
             a = np.nansum(meanarr, axis=1)
             b = np.nansum(maxi, axis=1)
             c = np.nansum(mini, axis=1)
-            print(f"\t========={type}=========")
-            print(f"\tName & Max & Mean & Min \\\\")
-            print(f"\t{folder} & {np.max(b):.0f} & {np.mean(a):.0f} & {np.min(c):.0f} \\\\")
+            print(f"========={type}=========")
+            print(f"Name & Max & Mean & Min \\\\")
+            print(f"{folder} & {np.max(b):.0f} & {np.mean(a):.0f} & {np.min(c):.0f} \\\\")
     plt.subplots_adjust(bottom=0.08, top=0.95, hspace=0.26)
 
     #plt.subplots_adjust(hspace=0.25 + 0.2*(len(lines)-16))
