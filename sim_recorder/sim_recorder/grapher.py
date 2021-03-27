@@ -152,9 +152,11 @@ def create_figure(figname, printing=False):
                             SMOOTH_INDEX, # window size used for filtering
                             POLY_INDEX), # order of fitted polynomial
                         
-            for i in range(10):
-                if high[0][i] > 300 and type == "cpu":
-                    high[0][i] = y[0][i]
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                lower[0][lower[0] < 0] = 0
+                high[0][high[0] < 0] = 0
+
             axs.fill_between(x, lower[0], high[0], alpha = 0.5, interpolate=False,color=color)
             axs.set_xlabel("Time (s)")
             if type == "ram":
@@ -178,7 +180,11 @@ def create_figure(figname, printing=False):
         #             xy=(mean-max(x)/40, -15), xycoords=("data", "axes points") )
 
         lines = axs.get_lines()
-        legend2 = axs.legend([lines[-1], pmark],['Average Runtime', "Failure Only"], loc="upper right", bbox_to_anchor=(1,1.1))
+        if failure != 0:
+            legend2 = axs.legend([lines[-1], pmark],['Average Runtime', "Failure Only"], loc="upper right", bbox_to_anchor=(1,1.1))
+        else:
+            legend2 = axs.legend([lines[-1]],['Average Runtime'], loc="upper right", bbox_to_anchor=(1,1.1))
+
         axs.add_artist(legend1)
         axs.set_xticks(list(axs.get_xticks())[1:-1] + [mean])
         labels = axs.get_xticklabels()
@@ -199,6 +205,8 @@ def create_figure(figname, printing=False):
             print(f"========={type}=========")
             print(f"Name & Max & Mean & Min \\\\")
             print(f"{folder} & {np.max(b):.0f} & {np.mean(a):.0f} & {np.min(c):.0f} \\\\")
+            print(f"Number of processes : {len(sorted_dict.keys())}, Per process : {np.mean(a)/len(sorted_dict.keys()):.2f}")
+
     plt.subplots_adjust(bottom=0.08, top=0.95, hspace=0.26)
 
     #plt.subplots_adjust(hspace=0.25 + 0.2*(len(lines)-16))

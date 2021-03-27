@@ -320,12 +320,15 @@ int main(int argc, char **argv)
                            0.0,
                            1.57,
                            0.79};
+
+        parameter_server->set_param(false);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         goto_joint_pose(&move_group, server, joints);
         collision_objects = planning_scene_interface.getObjects(targets);
         collision_object = collision_objects["target"];
         auto new_pose = collision_object.primitive_poses[0];
-
-        if ((new_pose.position.x < pose.position.x) || (pose.position.y + 0.1 < new_pose.position.y) || (pose.position.y - 0.1 > new_pose.position.y))
+        
+        if ((new_pose.position.x < pose.position.x+0.2) || (pose.position.y + 0.1 < new_pose.position.y) || (pose.position.y - 0.1 > new_pose.position.y))
         {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Cube is not in bound");
         }
