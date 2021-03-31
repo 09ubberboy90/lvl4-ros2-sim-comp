@@ -27,12 +27,12 @@ class ProcMonitor(Node):
         self.timer = self.create_timer(0.1, self.animate)
         self.idx = idx
         self.sim_name = sim_name
-        
+
     def update_missing(self):
-        length =  len(self.procs.keys())
+        length = len(self.procs.keys())
         if self.counter < 10:
             if self.current_length >= length:
-                self.counter += 1 
+                self.counter += 1
             else:
                 self.counter = 0
                 self.current_length = length
@@ -40,14 +40,13 @@ class ProcMonitor(Node):
             for proc in psutil.process_iter():
                 p = proc.name()
                 if p in self.allowed and proc.pid not in self.procs.keys():
-                    self.procs[proc.pid] = proc 
+                    self.procs[proc.pid] = proc
                     self.pids[proc.pid] = proc.name()
-                    proc.cpu_percent() # discard value
-                    proc.cpu_percent() # discard value
-
+                    proc.cpu_percent()  # discard value
+                    proc.cpu_percent()  # discard value
 
     def animate(self):
-        self.update_missing()            
+        self.update_missing()
         for pid, p in self.procs.items():
             try:
                 with p.oneshot():
@@ -125,6 +124,15 @@ allowed_ignition = [
     "rviz2",
     "run_recording"
 ]
+allowed_vr = [
+    "move_group",
+    "parameter_bridge",
+    "python3",
+    "ros2",
+    "ruby",
+    "rviz2",
+    "run_recording"
+]
 
 
 def run(simulator="webots", idx=0, args=None):
@@ -138,6 +146,8 @@ def run(simulator="webots", idx=0, args=None):
         allowed = allowed_webots[:-1]
     elif "gazebo_throw" == simulator:
         allowed = allowed_gazebo[:-1]
+    elif "vr" == simulator:
+        allowed = allowed_vr
     else:
         allowed = allowed_ignition
 
