@@ -97,7 +97,10 @@ with open(os.path.join(os.path.dirname(__file__), "../data", folder, "run.txt"))
             val = float(el.split()[4])
 
             mean_square += pow(val-mean, 2)
-    stddev = sqrt(mean_square / total)
+    if total != 0:
+        stddev = sqrt(mean_square / total)
+    else:
+        stddev = 0
 
 print(f"Name & Success & Failure & Timeout & Average Runtime & Standart Deviation\\\\")
 print(f"{folder} & {success} & {failure} & {150-(success + failure)} & {mean:.2f} & {stddev:.2f} \\\\")
@@ -165,8 +168,9 @@ def create_figure(figname, printing=False):
                 axs.set_title("CPU usage against time")
                 axs.set_ylabel("CPU Usage (% of one core)")
         legend1 = axs.legend(bbox_to_anchor=(1, 1.1), loc="upper left")
-        axs.axvline(x=mean, ls='--', color=colors[-2], label="Mean success")
-        axs.axvspan(mean-stddev, mean+stddev, alpha=0.2, color=colors[-2])
+        if success+failure != 0:
+            axs.axvline(x=mean, ls='--', color=colors[-2], label="Mean success")
+            axs.axvspan(mean-stddev, mean+stddev, alpha=0.2, color=colors[-2])
 
         if failure != 0:
             axs.axvspan(maxtime, x[-1], alpha=0.2, color=colors[-1])
@@ -182,7 +186,7 @@ def create_figure(figname, printing=False):
         if failure != 0:
             legend2 = axs.legend([lines[-1], pmark], ['Average Runtime',
                                                       "Failure Only"], loc="upper right", bbox_to_anchor=(1, 1.1))
-        else:
+        elif success+failure != 0:
             legend2 = axs.legend(
                 [lines[-1]], ['Average Runtime'], loc="upper right", bbox_to_anchor=(1, 1.1))
 

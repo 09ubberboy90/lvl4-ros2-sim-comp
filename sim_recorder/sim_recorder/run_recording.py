@@ -182,7 +182,7 @@ class VR():
         self.name = "vr"
         self.timeout = 999
         self.commands = [
-            "ros2 launch simple_arm ign_throw.launch.py",
+            "ros2 launch simple_arm ign_vr.launch.py",
         ]
         self.delays = []
 

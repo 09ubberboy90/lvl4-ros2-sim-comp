@@ -125,13 +125,15 @@ allowed_ignition = [
     "run_recording"
 ]
 allowed_vr = [
-    "move_group",
-    "parameter_bridge",
-    "python3",
-    "ros2",
-    "ruby",
-    "rviz2",
-    "run_recording"
+"fake_joint_driver_node",
+"parameter_bridge",
+"republisher",
+"robot_state_publisher",
+"ros2",
+"ruby",
+"rviz2",
+"servo_pose_tracking_demo",
+"static_transform_publisher",
 ]
 
 
