@@ -29,24 +29,15 @@ data_files.append(('share/' + package_name +'/protos', ['protos/panda.proto']))
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='1.0.0',
     packages=[package_name],
     data_files=data_files,
     install_requires=['setuptools'],
     zip_safe=True,
-    author='Cyberbotics',
-    author_email='support@cyberbotics.com',
-    maintainer='Cyberbotics',
-    maintainer_email='support@cyberbotics.com',
-    keywords=['ROS', 'Webots', 'Robot', 'Simulation', 'Universal Robots'],
-    classifiers=[
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python',
-        'Topic :: Software Development',
-    ],
-    description='Universal Robot ROS2 interface for Webots.',
-    license='Apache License, Version 2.0',
+    maintainer='Florent Audonnet',
+    maintainer_email='2330834a@student.gla.ac.uk',
+    description='Run a pick and place task and a throw task on Webots.',
+    license='BSD 3-Clause License',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

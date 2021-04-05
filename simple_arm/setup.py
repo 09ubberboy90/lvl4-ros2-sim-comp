@@ -4,7 +4,7 @@ package_name = 'simple_arm'
 
 setup(
     name=package_name,
-    version='0.1.0',
+    version='1.0.0',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -18,8 +18,8 @@ setup(
     zip_safe=True,
     maintainer='Florent Audonnet',
     maintainer_email='2330834a@student.gla.ac.uk',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Run a pick and place task and a throw task on Ignition and Gazebo',
+    license='BSD 3-Clause License',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

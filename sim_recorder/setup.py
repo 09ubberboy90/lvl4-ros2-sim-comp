@@ -4,7 +4,7 @@ package_name = 'sim_recorder'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='1.0.0',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -13,10 +13,10 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='ubb',
+    maintainer='Florent Audonnet',
     maintainer_email='2330834a@student.gla.ac.uk',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Automatically run, record and graph the results of each simulation',
+    license='BSD 3-Clause License',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

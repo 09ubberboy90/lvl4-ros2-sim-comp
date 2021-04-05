@@ -4,7 +4,7 @@ package_name = 'sim_spawner'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='1.0.0',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -13,10 +13,10 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='ubb',
+    maintainer='Florent Audonnet',
     maintainer_email='2330834a@student.gla.ac.uk',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='spawn object in both simulation and run the services to get their positions',
+    license='BSD 3-Clause License',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

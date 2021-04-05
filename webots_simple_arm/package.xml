@@ -1,15 +1,12 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>webots_simple_arm</name>
   <version>1.0.2</version>
-  <description>Universal Robot ROS2 interface for Webots.</description>
+  <description>Run a pick and place task and a throw task on Webots</description>
 
-  <maintainer email="support@cyberbotics.com">Cyberbotics</maintainer>
-  <license>Apache License 2.0</license>
-  <url type="website">http://wiki.ros.org/webots_ros2</url>
-  <url type="bugtracker">https://github.com/cyberbotics/webots_ros2/issues</url>
-  <url type="repository">https://github.com/cyberbotics/webots_ros2</url>
+  <maintainer email="2330834a@student.gla.ac.uk">Florent Audonnet</maintainer>
+  <license>BSD 3-Clause License</license>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
@@ -20,10 +17,7 @@
   <exec_depend>trajectory_msgs</exec_depend>
   <exec_depend>rviz2</exec_depend>
   <exec_depend>webots_ros2_core</exec_depend>
-  <exec_depend>webots_ros2_ur_e_description</exec_depend> <!-- TODO: replace by universal_robot once available for ROS2 -->
-
-  <!-- These test dependencies are optional
-  Their purpose is to make sure that the code passes the linters -->
+  
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
