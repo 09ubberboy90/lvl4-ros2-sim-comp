@@ -32,14 +32,14 @@ Those packages do not have an official release and as such must be built from so
 
 - MoveIt2 (Instructions available on [MoveIt2 Website](https://moveit.ros.org/install-moveit2/source/))
 - ros_ign (Instructions available on [Github](https://github.com/ignitionrobotics/ros_ign/))
-- ign_moveit2 (Instructions available on [Github](https://github.com/09ubberboy90/ign_moveit2)
+- ign_moveit2 (Instructions available on [Github](https://github.com/09ubberboy90/ign_moveit2))
 
 ### Build steps
 
 ```bash
 mkdir workspace
 cd workspace
-git clone https://github.com/09ubberboy90/ros2_sim_compare.git
+git clone https://github.com/09ubberboy90/ros2_sim_compare.git (This project)
 rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y
 cd ..
 colcon build
