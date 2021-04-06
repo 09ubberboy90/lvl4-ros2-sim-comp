@@ -28,11 +28,12 @@ Those packages can be installed through the package manager if on linux or built
 
 #### Building from Source
 
-Those packages do not have an official release and as such must be built from source
+Those packages do not have an official release and as such must be built from source and then sourced in all terminal in which we want to use this project
 
 - MoveIt2 (Instructions available on [MoveIt2 Website](https://moveit.ros.org/install-moveit2/source/))
 - ros_ign (Instructions available on [Github](https://github.com/ignitionrobotics/ros_ign/))
 - ign_moveit2 (Instructions available on [Github](https://github.com/09ubberboy90/ign_moveit2))
+- gazebo_ros2_control (Instructions available on [Github](https://github.com/ros-simulation/gazebo_ros2_control))
 
 ### Build steps
 
