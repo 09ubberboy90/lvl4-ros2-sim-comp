@@ -73,12 +73,13 @@ for key, el in types.items():
         existing = []
         with open(name) as f:
             for lines in f.readlines():
+                lines = lines.replace("\n", "")
                 line = lines.split(",")
                 p = line[0]
                 if "ruby" in p:
                     p = "ignition"
                 val = line[1:]
-                val = [float(x) for x in val]
+                val = [float(x) for x in val if x]
                 counter = 0
                 new_p = p
                 while new_p in existing:
@@ -158,6 +159,8 @@ def create_figure(figname, printing=False):
                 length = tmp
         for color, (name, ls) in zip(colors, sorted_dict.items()):
             arr = np.array([xi+[np.nan]*(length-len(xi)) for xi in ls])
+            if "_win" in figname and type == "cpu": 
+                arr *= 8 ## acount for windows using full cpu usage vs linux and core
             if total is None:
                 total = arr
             else:
@@ -169,20 +172,26 @@ def create_figure(figname, printing=False):
                 standard_dev = np.nanstd(arr, axis=0)
             # because recording every 100 ms
             x = np.arange(0, meanarr.shape[0], 1)/10
-
-            y = signal.savgol_filter(meanarr,
+            y = [meanarr]
+            if printing:
+                y = signal.savgol_filter(meanarr,
                                      SMOOTH_INDEX,  # window size used for filtering
                                      POLY_INDEX),  # order of fitted polynomial
             axs.plot(x, y[0], label=name, color=color)
 
             lower = meanarr-standard_dev
             high = meanarr+standard_dev
-            lower = signal.savgol_filter(lower,
-                                         SMOOTH_INDEX,  # window size used for filtering
-                                         POLY_INDEX),  # order of fitted polynomial
-            high = signal.savgol_filter(high,
-                                        SMOOTH_INDEX,  # window size used for filtering
-                                        POLY_INDEX),  # order of fitted polynomial
+            if printing:
+                lower = signal.savgol_filter(lower,
+                                            SMOOTH_INDEX,  # window size used for filtering
+                                            POLY_INDEX),  # order of fitted polynomial
+                high = signal.savgol_filter(high,
+                                            SMOOTH_INDEX,  # window size used for filtering
+                                            POLY_INDEX),  # order of fitted polynomial
+
+            else:
+                lower = [lower]
+                high = [high]
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)

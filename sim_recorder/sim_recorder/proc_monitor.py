@@ -163,6 +163,7 @@ allowed_vr = [
 "rviz2",
 "servo_pose_tracking_demo",
 "static_transform_publisher",
+"run_recording"
 ]
 
 
