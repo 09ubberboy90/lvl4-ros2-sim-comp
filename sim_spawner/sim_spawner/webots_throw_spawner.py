@@ -33,7 +33,7 @@ class SpawnerNode(WebotsNode):
 
         self.spawn_obj("worlds/Cube.wbo", position=[1.5,0.065,0.025], offset=[0,0,0])
         
-        self.spawn_obj("worlds/Cube.wbo", position=[0.5,0.0,0.025], offset=[0,0,0]) # target must be second to spawn
+        self.spawn_obj("worlds/Sphere.wbo", position=[0.5,0.0,0.025], offset=[0,0,0]) # target must be second to spawn
 
         self.spawn_obj("worlds/Cube.wbo", position=[1.5,0.0,0.025], offset=[0,0,0])
         self.spawn_obj("worlds/Cube.wbo", position=[1.5,-0.065,0.025], offset=[0,0,0])
