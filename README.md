@@ -1,4 +1,4 @@
-# ros2_sim_compare
+# lvl4-ros2-sim-comp
 
 This project has been realized has a 4th year project for the University of Glasgow Computing Science degree.
 It includes multiple tasks using the Franka Panda robot in different simulator using ROS2 and MoveIt2. Tasks include a pick and place and a throw task and the simulators included are Webots, Gazebo and Ignition.
